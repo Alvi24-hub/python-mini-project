@@ -18,7 +18,9 @@ if (!document.getElementById('spinStyle')) {
 }
 
 const html = document.documentElement;
-const themeToggle = document.getElementById('themeToggle');
+const themeToggles = document.querySelectorAll('.theme-toggle');
+const themeModePicker = document.getElementById('themeModePicker');
+const themeModeMenu = document.getElementById('themeModeMenu');
 const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 
 function prefersReducedMotion() {
@@ -52,24 +54,69 @@ function syncThemeColor(theme) {
 }
 
 function updateThemeToggleAria(isLightTheme) {
-  if (!themeToggle) return;
-  themeToggle.setAttribute(
-    'aria-label',
-    isLightTheme ? 'Switch to dark mode' : 'Switch to light mode'
-  );
+  themeToggles.forEach(function (toggle) {
+    toggle.setAttribute(
+      'aria-label',
+      isLightTheme ? 'Switch to dark mode' : 'Switch to light mode'
+    );
+  });
 }
 
-if (themeToggle) {
-  themeToggle.addEventListener('click', () => {
-    const currentTheme = html.getAttribute('data-theme');
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+function setThemePickerLabel(mode) {
+  if (!themeModePicker) return;
+  var label = themeModePicker.querySelector('.theme-picker-value');
+  if (!label) return;
+  var labelText =
+    mode === 'auto'
+      ? 'Auto (System)'
+      : mode === 'light'
+        ? 'Light'
+        : 'Dark';
+  label.textContent = labelText;
+  themeModePicker.setAttribute('aria-label', 'Appearance mode: ' + labelText);
+  themeModePicker.setAttribute(
+    'aria-expanded',
+    themeModeMenu && themeModeMenu.classList.contains('active') ? 'true' : 'false'
+  );
+  if (!themeModeMenu) return;
+  themeModeMenu.querySelectorAll('.theme-picker-option').forEach(function (option) {
+    const optionMode = option.getAttribute('data-value');
+    const isSelected = optionMode === mode;
+    option.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+  });
+}
 
-    html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    syncThemeColor(newTheme);
+function closeThemeMenu() {
+  if (!themeModeMenu || !themeModePicker) return;
+  themeModeMenu.classList.remove('active');
+  themeModePicker.setAttribute('aria-expanded', 'false');
+}
 
-    themeToggle.innerHTML =
-      newTheme === 'light'
+function openThemeMenu() {
+  if (!themeModeMenu || !themeModePicker) return;
+  themeModeMenu.classList.add('active');
+  themeModePicker.setAttribute('aria-expanded', 'true');
+
+  const selectedOption = themeModeMenu.querySelector('.theme-picker-option[aria-selected="true"]');
+  if (selectedOption) {
+    selectedOption.focus();
+  }
+}
+
+function getSystemTheme() {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function applyThemeMode(mode) {
+  var theme = mode === "auto" ? getSystemTheme() : mode;
+  html.setAttribute("data-theme", theme);
+  localStorage.setItem("theme", theme);
+  localStorage.setItem("themeMode", mode);
+  syncThemeColor(theme);
+
+  themeToggles.forEach(function (toggle) {
+    toggle.innerHTML =
+      theme === 'light'
         ? '<i class="fas fa-sun" aria-hidden="true"></i>'
         : '<i class="fas fa-moon" aria-hidden="true"></i>';
     updateThemeToggleAria(newTheme === 'light');
@@ -86,7 +133,6 @@ if (themeToggle) {
       : '<i class="fas fa-moon" aria-hidden="true"></i>';
   updateThemeToggleAria(savedTheme === 'light');
 }
-
 function escapeHtml(str) {
   var d = document.createElement("div");
   d.textContent = str;
@@ -157,20 +203,25 @@ function showInfoModal(title, steps) {
   var gotItBtn = document.getElementById("infoModalGotIt");
 
   if (closeBtn) {
-    closeBtn.onclick = function(e) {
+    // Remove old listeners by cloning
+    const newClose = closeBtn.cloneNode(true);
+    closeBtn.parentNode.replaceChild(newClose, closeBtn);
+    newClose.addEventListener("click", function (e) {
       e.preventDefault();
       closeModal();
     };
   }
 
   if (gotItBtn) {
-    gotItBtn.onclick = function(e) {
+    const newGotIt = gotItBtn.cloneNode(true);
+    gotItBtn.parentNode.replaceChild(newGotIt, gotItBtn);
+    newGotIt.addEventListener("click", function (e) {
       e.preventDefault();
       closeModal();
     };
   }
 
-  overlay.onclick = function(e) {
+  overlay.onclick = function (e) {
     if (e.target === overlay) closeModal();
   };
 
@@ -222,7 +273,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (pageCategory && window.innerWidth >= 1100) {
     document.body.classList.add("sidebar-active");
   }
-  
+
   function repairLegacyHomeLayoutNow() {
     var legacyHost = document.querySelector(".hero-code-snippets")
       ? document.querySelector(".hero-code-snippets").closest(".hero-section")
@@ -583,7 +634,8 @@ document.addEventListener("DOMContentLoaded", function () {
     currentCategory = category;
     syncSidebarTabs(category);
     syncStickyTabs(category);
-    
+
+    // Sync stats cards highlight
     var statsCards = document.querySelectorAll(".stats-card");
     statsCards.forEach(function (card) {
       card.classList.toggle("active", card.getAttribute("data-filter") === category);
@@ -773,51 +825,51 @@ document.addEventListener("DOMContentLoaded", function () {
    Wire Hero Category Navigation
 ========================================================== */
 
-const heroNavButtons = document.querySelectorAll(".hero-nav-btn");
+  const heroNavButtons = document.querySelectorAll(".hero-nav-btn");
 
-heroNavButtons.forEach(function (button) {
+  heroNavButtons.forEach(function (button) {
 
     button.addEventListener("click", function () {
 
-        const category = button.dataset.category;
+      const category = button.dataset.category;
 
-        heroNavButtons.forEach(function (btn) {
-            btn.classList.remove("active");
-        });
+      heroNavButtons.forEach(function (btn) {
+        btn.classList.remove("active");
+      });
 
-        button.classList.add("active");
+      button.classList.add("active");
 
-        syncSidebarTabs(category);
-        syncStickyTabs(category);
+      syncSidebarTabs(category);
+      syncStickyTabs(category);
 
-        if (category === "playground") {
+      if (category === "playground") {
 
-            showPlaygroundSection();
+        showPlaygroundSection();
 
-            if (playgroundSection) {
-                playgroundSection.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                });
-            }
-
-        } else {
-
-            showProjectsSection();
-            applyCategoryFilter(category);
-
-            if (projectsSection) {
-                projectsSection.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                });
-            }
-
+        if (playgroundSection) {
+          playgroundSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
         }
+
+      } else {
+
+        showProjectsSection();
+        applyCategoryFilter(category);
+
+        if (projectsSection) {
+          projectsSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
+
+      }
 
     });
 
-});
+  });
 
 
   /* ── Stats Cards ──────────────────────────────────────────── */
@@ -825,7 +877,8 @@ heroNavButtons.forEach(function (button) {
   statsCards.forEach(function (card) {
     card.addEventListener("click", function () {
       var category = card.getAttribute("data-filter");
-      
+
+      // Update active highlight class on stats cards
       statsCards.forEach(function (c) {
         c.classList.toggle("active", c === card);
       });
@@ -899,7 +952,7 @@ heroNavButtons.forEach(function (button) {
   /* ── Sidebar Active Scroll Observer ───────────────────────── */
   if (!pageCategory && projectsSection) {
     console.log('Setting up sidebar observer');
- 
+
     const checkAndToggleSidebar = () => {
       if (playgroundActive) {
         document.body.classList.remove("sidebar-active");
@@ -916,16 +969,8 @@ heroNavButtons.forEach(function (button) {
       const rect = projectsSection.getBoundingClientRect();
       const heroSection = document.querySelector('.hero-section');
       const heroBottom = heroSection ? heroSection.getBoundingClientRect().bottom : 0;
-      // FIX ISSUE #1704: Hide the fixed sidebar when the footer enters the viewport
-      const footer = document.querySelector(".footer");
-      const isFooterVisible = footer
-        ? footer.getBoundingClientRect().top < window.innerHeight
-        : false;
-      const showSidebar =
-        rect.top < window.innerHeight &&
-        !isFooterVisible &&
-        window.scrollY > heroBottom - 100;
- 
+      const showSidebar = rect.top < window.innerHeight && window.scrollY > heroBottom - 100;
+
       document.body.classList.toggle("sidebar-active", showSidebar);
       console.log('Sidebar active:', showSidebar, 'scrollY:', window.scrollY, 'playgroundActive:', playgroundActive);
 
@@ -939,19 +984,20 @@ heroNavButtons.forEach(function (button) {
         }
       }
     };
- 
+
     window.addEventListener('scroll', checkAndToggleSidebar);
     checkAndToggleSidebar();
   }
 
   /* ═══════════════════════════════════════════════════════════════
-     SEARCH - FIXED & IMPROVED
-     ═══════════════════════════════════════════════════════════════ */
+    SEARCH - FIXED & IMPROVED
+    ═══════════════════════════════════════════════════════════════ */
 
   // Get search elements
   var searchInput = document.querySelector(".sidebar-dock #searchInput");
   var searchDropdown = document.getElementById("searchDropdown");
   var searchLoader = document.getElementById("searchLoader");
+  // Select all list containers and sections for dropdown and sidebar variants (including fallbacks)
   var recentSearchesLists = document.querySelectorAll("#recentSearchesList, #dropdownRecentSearchesList, #sidebarRecentSearchesList");
   var recentSearchesSections = document.querySelectorAll("#recentSearchesSection, #dropdownRecentSearchesSection, #sidebarRecentSearchesSection");
   var dropdownRecentSearchesSection = document.getElementById("dropdownRecentSearchesSection") || document.getElementById("recentSearchesSection");
@@ -960,24 +1006,34 @@ heroNavButtons.forEach(function (button) {
   var tipsSection = document.getElementById("tipsSection");
   var noResultsMessage = document.getElementById("noResultsMessage");
 
-  // Hide top navigation search
+  // Get the top navigation search input (to remove later)
   var navSearchInput = document.getElementById("navSearchInput");
+
+  // ============================================================
+  // HIDE THE TOP NAVIGATION SEARCH BAR (as requested)
+  // ============================================================
   if (navSearchInput) {
+    // Hide the entire parent container
     var navSearchContainer = navSearchInput.closest('.nav-search-container');
     if (navSearchContainer) {
       navSearchContainer.style.display = 'none';
     } else {
+      // If no container, just hide the input
       navSearchInput.style.display = 'none';
     }
   }
 
+  // ============================================================
+  // IMPROVED SEARCH FUNCTION
+  // ============================================================
+
   function getMatchingProjects(query) {
     if (!query || query.trim() === '') return [];
-    
+
     var q = query.toLowerCase().trim();
     var matches = [];
     var favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    
+
     projectCards.forEach(function (card) {
       var title = (card.querySelector("h3") || {}).textContent || "";
       var desc = (card.querySelector("p") || {}).textContent || "";
@@ -985,15 +1041,17 @@ heroNavButtons.forEach(function (button) {
       var category = card.getAttribute("data-category") || "";
       var projectName = card.getAttribute("data-project") || "";
       var isFav = favorites.includes(projectName);
-      
-      var catMatch = currentCategory === "all" || 
-                     (currentCategory === "favorites" && isFav) ||
-                     (currentCategory !== "favorites" && category === currentCategory);
-      
+
+      // Check if current category filter applies
+      var catMatch = currentCategory === "all" ||
+        (currentCategory === "favorites" && isFav) ||
+        (currentCategory !== "favorites" && category === currentCategory);
+
+      // Search in title, description, tags
       var searchMatch = title.toLowerCase().includes(q) ||
-                       desc.toLowerCase().includes(q) ||
-                       tags.includes(q);
-      
+        desc.toLowerCase().includes(q) ||
+        tags.includes(q);
+
       if (catMatch && searchMatch) {
         matches.push({
           card: card,
@@ -1006,10 +1064,11 @@ heroNavButtons.forEach(function (button) {
         });
       }
     });
-    
+
     return matches;
   }
 
+  // Improved highlight function
   function highlightText(container, text, query) {
     var safe = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     var parts = text.split(new RegExp("(" + safe + ")", "gi"));
@@ -1043,6 +1102,7 @@ heroNavButtons.forEach(function (button) {
     }
   }
 
+  // Render recent searches
   function renderRecentSearches() {
     if (noResultsMessage) noResultsMessage.style.display = "none";
     if (recentSearchesSections.length === 0) return;
@@ -1101,6 +1161,7 @@ heroNavButtons.forEach(function (button) {
       }
     });
 
+    // Clear recent buttons
     var clearRecentBtns = document.querySelectorAll("#clearRecentBtn, #clearRecentDropdownBtn, #clearRecentSidebarBtn");
     clearRecentBtns.forEach(function (btn) {
       if (!btn) return;
@@ -1116,7 +1177,7 @@ heroNavButtons.forEach(function (button) {
             renderRecentSearches();
             closeDropdown();
           },
-          function () {}
+          function () { }
         );
       };
     });
@@ -1129,9 +1190,10 @@ heroNavButtons.forEach(function (button) {
     if (tipsSection) tipsSection.style.display = "block";
   }
 
+  // Render search suggestions
   function renderSuggestions(query) {
     if (searchLoader) searchLoader.style.display = "none";
-    
+
     if (!query || query.trim() === '') {
       renderRecentSearches();
       return;
@@ -1158,6 +1220,7 @@ heroNavButtons.forEach(function (button) {
         var item = document.createElement("div");
         item.className = "dropdown-item" + (index === selectedSuggestionIndex ? " selected" : "");
 
+        // Icon
         var iconBox = document.createElement("div");
         iconBox.className = "dropdown-item-icon";
         var banner = project.card.querySelector(".card-banner");
@@ -1169,10 +1232,12 @@ heroNavButtons.forEach(function (button) {
           iconBox.appendChild(img);
         }
 
+        // Title with highlight
         var titleBox = document.createElement("div");
         titleBox.className = "dropdown-item-text";
         highlightText(titleBox, project.title, query);
-        
+
+        // Description (optional)
         if (project.desc) {
           var descSpan = document.createElement("span");
           descSpan.className = "dropdown-item-desc";
@@ -1181,21 +1246,22 @@ heroNavButtons.forEach(function (button) {
           titleBox.appendChild(descSpan);
         }
 
+        // Category tag
         var tag = document.createElement("span");
         tag.className = "dropdown-item-tag";
         tag.textContent = project.category || "project";
 
         item.append(iconBox, titleBox, tag);
-        
+
         item.addEventListener("click", function () {
           selectSuggestion(project.title);
         });
-        
+
         item.addEventListener("mouseenter", function () {
           selectedSuggestionIndex = index;
           updateSuggestionHighlight();
         });
-        
+
         resultsList.appendChild(item);
       });
     }
@@ -1228,16 +1294,22 @@ heroNavButtons.forEach(function (button) {
     }
   }
 
+  // ============================================================
+  // MAIN SEARCH EXECUTION - FIXED
+  // ============================================================
+
   function performSearch(commit) {
     var query = currentSearchQuery ? currentSearchQuery.trim().toLowerCase() : '';
-    
+
+    // If no query, reset to show all projects
     if (!query) {
       applyCategoryFilter(currentCategory);
       if (emptyStateHint) {
         emptyStateHint.textContent = "Try adjusting your search or category filter.";
       }
-      var visibleCount = projectCards.filter(function(c) { 
-        return c.style.display !== "none"; 
+      // Update project count
+      var visibleCount = projectCards.filter(function (c) {
+        return c.style.display !== "none";
       }).length;
       if (projectCountBadge) {
         projectCountBadge.textContent = String(visibleCount) + " projects";
@@ -1245,12 +1317,14 @@ heroNavButtons.forEach(function (button) {
       return;
     }
 
+    // If searching, set category to "all" to search everything
     if (currentCategory !== "all") {
       currentCategory = "all";
       syncSidebarTabs("all");
       syncStickyTabs("all");
     }
 
+    // Save to recent searches
     if (commit) {
       recentSearches = recentSearches.filter(function (s) {
         return s.toLowerCase() !== query;
@@ -1262,7 +1336,7 @@ heroNavButtons.forEach(function (button) {
 
     var visibleCount = 0;
     var favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    
+
     projectCards.forEach(function (card) {
       var category = card.getAttribute("data-category") || "";
       var title = (card.querySelector("h3") || {}).textContent || "";
@@ -1271,11 +1345,15 @@ heroNavButtons.forEach(function (button) {
       var projectName = card.getAttribute("data-project") || "";
       var isFav = favorites.includes(projectName);
 
+      // Match: search in title, description, or tags
       var searchMatch = title.toLowerCase().includes(query) ||
-                       desc.toLowerCase().includes(query) ||
-                       tags.includes(query);
+        desc.toLowerCase().includes(query) ||
+        tags.includes(query);
 
-      if (searchMatch) {
+      // Category match (always true since we set to "all" above)
+      var catMatch = true;
+
+      if (catMatch && searchMatch) {
         card.style.display = "";
         visibleCount++;
       } else {
@@ -1283,19 +1361,24 @@ heroNavButtons.forEach(function (button) {
       }
     });
 
+    // Show/hide empty state
     if (emptyState) {
       emptyState.style.display = visibleCount === 0 ? "block" : "none";
       if (visibleCount === 0 && emptyStateHint) {
         emptyStateHint.textContent = 'No projects match "' + query + '". Try a different keyword.';
       }
     }
-    
+
     if (projectCountBadge) {
       projectCountBadge.textContent = String(visibleCount) + " projects";
     }
   }
 
-  var searchInputs = [searchInput].filter(Boolean);
+  // ============================================================
+  // WIRE SEARCH INPUTS
+  // ============================================================
+
+  var searchInputs = [searchInput].filter(Boolean); // Only sidebar search now
 
   if (searchInputs.length) {
     var debouncedSearch = debounce(function (query) {
@@ -1303,6 +1386,7 @@ heroNavButtons.forEach(function (button) {
     }, 200);
 
     searchInputs.forEach(function (input) {
+      // Input event - real-time search
       input.addEventListener("input", function (e) {
         var rawValue = e.target.value;
         var query = rawValue.trim();
@@ -1311,15 +1395,20 @@ heroNavButtons.forEach(function (button) {
         if (clearSearchBtn) {
           clearSearchBtn.hidden = query === "";
         }
-        
+
+        // Show loader
         if (searchLoader) {
           searchLoader.style.display = query ? "block" : "none";
         }
-        
+
+        // Update suggestions
         debouncedSearch(query);
+
+        // Perform search (without saving to recent)
         performSearch(false);
       });
 
+      // Focus event - show dropdown
       input.addEventListener("focus", function () {
         if (searchDropdown) {
           openDropdown();
@@ -1331,14 +1420,16 @@ heroNavButtons.forEach(function (button) {
         }
       });
 
+      // Blur event - close dropdown after delay
       input.addEventListener("blur", function () {
-        setTimeout(function() {
+        setTimeout(function () {
           if (searchDropdown && !searchDropdown.matches(':hover')) {
             closeDropdown();
           }
         }, 200);
       });
 
+      // Keyboard navigation
       input.addEventListener("keydown", function (e) {
         if (e.key === "Escape") {
           input.value = "";
@@ -1350,13 +1441,14 @@ heroNavButtons.forEach(function (button) {
           closeDropdown();
           input.blur();
         }
-        
+
         if (e.key === "Enter") {
           e.preventDefault();
           var query = currentSearchQuery ? currentSearchQuery.trim() : '';
           if (query) {
             performSearch(true);
             closeDropdown();
+            // Scroll to results
             if (projectsSection) {
               projectsSection.scrollIntoView({
                 behavior: prefersReducedMotion() ? "auto" : "smooth",
@@ -1365,12 +1457,13 @@ heroNavButtons.forEach(function (button) {
             }
           }
         }
-        
+
+        // Arrow keys for navigation
         if (e.key === "ArrowDown" || e.key === "ArrowUp") {
           e.preventDefault();
           var items = resultsList ? resultsList.querySelectorAll(".dropdown-item") : [];
           if (items.length === 0) return;
-          
+
           var currentIndex = selectedSuggestionIndex;
           if (e.key === "ArrowDown") {
             selectedSuggestionIndex = Math.min(currentIndex + 1, items.length - 1);
@@ -1378,7 +1471,8 @@ heroNavButtons.forEach(function (button) {
             selectedSuggestionIndex = Math.max(currentIndex - 1, -1);
           }
           updateSuggestionHighlight();
-          
+
+          // Scroll into view
           if (selectedSuggestionIndex >= 0 && items[selectedSuggestionIndex]) {
             items[selectedSuggestionIndex].scrollIntoView({ block: 'nearest' });
           }
@@ -1388,13 +1482,19 @@ heroNavButtons.forEach(function (button) {
 
     if (clearSearchBtn) {
       clearSearchBtn.addEventListener("click", function () {
+
         searchInputs.forEach(function (input) {
           input.value = "";
         });
+
         currentSearchQuery = "";
+
         performSearch(false);
+
         closeDropdown();
+
         clearSearchBtn.hidden = true;
+
         if (searchInput) {
           searchInput.focus();
         }
@@ -1402,15 +1502,18 @@ heroNavButtons.forEach(function (button) {
     }
   }
 
+  // Close dropdown when clicking outside
   document.addEventListener("click", function (e) {
-    if (searchDropdown && searchInput && 
-        !searchDropdown.contains(e.target) && 
-        e.target !== searchInput) {
+    if (searchDropdown && searchInput &&
+      !searchDropdown.contains(e.target) &&
+      e.target !== searchInput) {
       closeDropdown();
     }
   });
 
+  // Keyboard shortcuts
   document.addEventListener("keydown", function (e) {
+    // Ctrl+K or Cmd+K to focus search
     if ((e.ctrlKey || e.metaKey) && e.key === "k") {
       e.preventDefault();
       if (searchInput) {
@@ -1420,6 +1523,7 @@ heroNavButtons.forEach(function (button) {
       return;
     }
 
+    // "/" to focus search (if not in input)
     if (e.key === "/" && !isTypingInField(e.target)) {
       e.preventDefault();
       if (searchInput) {
@@ -1429,13 +1533,16 @@ heroNavButtons.forEach(function (button) {
     }
   });
 
+  // Helper function to check if typing in field
   function isTypingInField(target) {
     if (!target) return false;
     var tag = target.tagName ? target.tagName.toLowerCase() : "";
     return tag === "input" || tag === "textarea" || tag === "select" || target.isContentEditable;
   }
 
+  // Initial render
   renderRecentSearches();
+
   console.log("🔍 Search functionality initialized successfully!");
 
   /* ═══════════════════════════════════════════════════════════════
@@ -1506,16 +1613,88 @@ heroNavButtons.forEach(function (button) {
     document.body.style.overflow = "hidden";
     setMainInert(true);
 
-    // Show loading
-    modalBody.innerHTML = `
-      <div style="text-align:center;padding:60px 20px;">
-        <div style="font-size:3rem;margin-bottom:20px;">⏳</div>
-        <h3 style="color:#e2e8f0;">Loading ${name.replace(/-/g, ' ')}...</h3>
-        <div style="margin:20px auto;width:40px;height:40px;border:4px solid #1e293b;border-top-color:#a78bfa;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-      </div>
-    `;
+    // Load new content
+    safeRun(function () {
+      var html = '';
+      if (typeof getProjectHTML === "function") {
+        html = getProjectHTML(name);
+      }
 
-    // Add to recently viewed
+      if (!html || html === 'undefined') {
+        html = '<div style="padding:1rem;color:var(--text-secondary)">Project content unavailable.</div>';
+      }
+
+      modalBody.innerHTML = html;
+
+      if (typeof initializeProject === "function") {
+        initializeProject(name);
+      }
+      // setupModalInfoButton(name);
+
+      // Inject info button - FIXED for Tic Tac Toe and all projects
+      var projectContent = modalBody.querySelector(".project-content");
+      if (projectContent) {
+        // First, check if there's already an info button (to avoid duplicates)
+        if (projectContent.querySelector(".inline-info-btn")) {
+          // Info button already exists, skip injection
+          console.log('ℹ️ Info button already exists for', name);
+        } else {
+          var firstHeading = projectContent.querySelector("h2, h3, .pet-title");
+
+          // Special case for Tic Tac Toe - look for the heading inside project-content
+          if (!firstHeading) {
+            firstHeading = projectContent.querySelector('[style*="display: flex"] h2');
+          }
+
+          if (!firstHeading) {
+            // Look for any element that might be a title
+            firstHeading = projectContent.querySelector('[class*="title"], [class*="header"] h2');
+          }
+
+          if (firstHeading && !projectContent.querySelector(".inline-info-btn")) {
+            var infoBtn = document.createElement("button");
+            infoBtn.className = "inline-info-btn";
+            infoBtn.innerHTML = "ⓘ";
+            infoBtn.setAttribute("aria-label", "How to use this project");
+            infoBtn.style.marginLeft = "12px";
+            infoBtn.style.background = "none";
+            infoBtn.style.border = "none";
+            infoBtn.style.fontSize = "1.3rem";
+            infoBtn.style.cursor = "pointer";
+            infoBtn.style.color = "var(--accent)";
+            infoBtn.style.verticalAlign = "middle";
+
+            infoBtn.addEventListener("click", function (e) {
+              e.stopPropagation();
+              if (typeof getProjectInstructions === "function") {
+                var info = getProjectInstructions(name);
+                if (info && typeof showInfoModal === "function") {
+                  showInfoModal(info.title, info.steps);
+                }
+              }
+            });
+
+            if (firstHeading.style.display !== "inline-block") {
+              firstHeading.style.display = "inline-block";
+            }
+            firstHeading.appendChild(infoBtn);
+          }
+        }
+      }
+    });
+
+    // Setup focus trap
+    if (removeTrap) removeTrap();
+    removeTrap = trapFocus(modal);
+
+    // Focus the close button for accessibility
+    setTimeout(function () {
+      if (modalClose && modalClose.focus) {
+        modalClose.focus({ preventScroll: true });
+      }
+    }, 100);
+
+    // Update recently viewed
     if (name) {
       var recent = JSON.parse(localStorage.getItem("recentProjects") || "[]");
       recent = recent.filter(function (r) { return r !== name; });
@@ -1524,118 +1703,8 @@ heroNavButtons.forEach(function (button) {
       localStorage.setItem("recentProjects", JSON.stringify(recent));
       if (typeof window.updateRecentlyViewed === "function") window.updateRecentlyViewed();
     }
-
-    // Load the project
-    setTimeout(function() {
-      try {
-        var htmlContent = null;
-        
-        // Try getProjectHTML from project.js
-        if (typeof getProjectHTML === 'function') {
-          try {
-            htmlContent = getProjectHTML(name);
-            console.log('📄 getProjectHTML returned:', htmlContent ? 'content' : 'null');
-          } catch(e) {
-            console.warn('getProjectHTML error:', e.message);
-          }
-        }
-        
-        // If that failed, try direct function
-        if (!htmlContent || htmlContent.trim().length < 50 || htmlContent.includes('error-state')) {
-          var fnName = 'get' + name.split('-').map(function(w) {
-            return w.charAt(0).toUpperCase() + w.slice(1);
-          }).join('') + 'HTML';
-          
-          if (typeof window[fnName] === 'function') {
-            try {
-              htmlContent = window[fnName]();
-              console.log('📄 Direct function loaded:', fnName);
-            } catch(e) {
-              console.warn(fnName + ' error:', e.message);
-            }
-          }
-        }
-        
-        // If we have content, show it
-        if (htmlContent && typeof htmlContent === 'string' && htmlContent.trim().length > 50 && !htmlContent.includes('error-state')) {
-          modalBody.innerHTML = htmlContent;
-          console.log('✅ Loaded:', name);
-          
-          // Initialize the project
-          setTimeout(function() {
-            try {
-              // Try initializeProject from project.js
-              if (typeof initializeProject === 'function') {
-                initializeProject(name);
-                console.log('✅ Initialized via project.js');
-              }
-              
-              // Also try direct init function
-              var initFn = 'init' + name.split('-').map(function(w) {
-                return w.charAt(0).toUpperCase() + w.slice(1);
-              }).join('');
-              if (typeof window[initFn] === 'function') {
-                window[initFn]();
-                console.log('✅ Initialized via direct function:', initFn);
-              }
-            } catch(e) {
-              console.warn('Init error:', e.message);
-            }
-          }, 100);
-          
-          // Setup focus trap
-          if (removeTrap) removeTrap();
-          removeTrap = trapFocus(modal);
-          
-          setTimeout(function () {
-            if (modalClose && modalClose.focus) {
-              modalClose.focus({ preventScroll: true });
-            }
-          }, 100);
-          
-          return;
-        }
-        
-        // If nothing worked, show coming soon
-        modalBody.innerHTML = `
-          <div style="text-align:center;padding:60px 20px;">
-            <div style="font-size:4rem;margin-bottom:1rem;">🚀</div>
-            <h2 style="color:#e2e8f0;margin-bottom:0.5rem;">${name.replace(/-/g, ' ').toUpperCase()}</h2>
-            <p style="color:#94a3b8;margin-bottom:1.5rem;">This project is coming soon!</p>
-            <button onclick="closeProjectSafe()" 
-                    style="background:#a78bfa;color:white;border:none;padding:12px 32px;border-radius:50px;cursor:pointer;font-size:1rem;">
-              Close
-            </button>
-          </div>
-        `;
-        console.warn('⚠️ Project not available:', name);
-        
-      } catch (error) {
-        console.error('Error loading project:', error);
-        modalBody.innerHTML = `
-          <div style="text-align:center;padding:60px 20px;">
-            <div style="font-size:3rem;margin-bottom:20px;">⚠️</div>
-            <h3 style="color:#e2e8f0;">Error Loading Project</h3>
-            <p style="color:#94a3b8;">${error.message || 'Unknown error'}</p>
-            <button onclick="closeProjectSafe()" 
-                    style="margin-top:20px;background:#a78bfa;color:white;border:none;padding:12px 32px;border-radius:50px;cursor:pointer;">
-              Close
-            </button>
-          </div>
-        `;
-      }
-    }, 300);
-
-    // Setup focus trap
-    if (removeTrap) removeTrap();
-    removeTrap = trapFocus(modal);
-
-    setTimeout(function () {
-      if (modalClose && modalClose.focus) {
-        modalClose.focus({ preventScroll: true });
-      }
-    }, 100);
   }
+
 
   function closeProjectSafe() {
     if (!modal) return;
@@ -1653,7 +1722,8 @@ heroNavButtons.forEach(function (button) {
       removeTrap();
       removeTrap = null;
     }
-    
+
+    renderRecentSearches();
     // Clear content
     if (modalBody) {
       modalBody.innerHTML = "";
@@ -1675,13 +1745,13 @@ heroNavButtons.forEach(function (button) {
   if (modalClose) {
     modalClose.onclick = closeProjectSafe;
   }
-  
+
   if (modal) {
     modal.onclick = function (e) {
       if (e.target === modal) closeProjectSafe();
     };
   }
-  
+
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") closeProjectSafe();
   });
@@ -1694,12 +1764,14 @@ heroNavButtons.forEach(function (button) {
   function updateFavoritesCountBadge() {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     const count = favorites.length;
-    
+
+    // Update sidebar badge
     const badge = document.getElementById("favoritesCountBadge");
     if (badge) {
       badge.textContent = "(" + count + ")";
     }
-    
+
+    // Update stats dashboard
     const heroFavoriteCount = document.getElementById("heroFavoriteCount");
     if (heroFavoriteCount) {
       heroFavoriteCount.textContent = count;
@@ -1712,13 +1784,21 @@ heroNavButtons.forEach(function (button) {
        ═══════════════════════════════════════════════════════════════ */
   function wireProjectCard(card) {
     var name = card.getAttribute("data-project");
-    const difficulty = card.getAttribute("data-difficulty");
+    const difficulty =
+      card.getAttribute("data-difficulty");
 
     if (difficulty) {
+
       const badge = document.createElement("span");
-      badge.className = "difficulty-badge " + difficulty.toLowerCase();
+
+      badge.className =
+        "difficulty-badge " +
+        difficulty.toLowerCase();
+
       badge.textContent = difficulty;
+
       card.appendChild(badge);
+
     }
 
     // Favorite Button
@@ -1742,7 +1822,7 @@ heroNavButtons.forEach(function (button) {
       e.stopPropagation();
       var favs = JSON.parse(localStorage.getItem("favorites") || "[]");
       var idx = favs.indexOf(name);
-      
+
       if (idx === -1) {
         favs.push(name);
         favBtn.classList.add("active");
@@ -1759,9 +1839,10 @@ heroNavButtons.forEach(function (button) {
           card.style.display = "none";
         }
       }
-      
+
       localStorage.setItem("favorites", JSON.stringify(favs));
-      
+
+      // Update badge and counts
       if (typeof updateSidebarCategoryCounts === 'function') {
         updateSidebarCategoryCounts();
       }
@@ -1843,7 +1924,8 @@ heroNavButtons.forEach(function (button) {
     var section = document.getElementById("recentlyViewedSection");
     if (!grid || !section) return;
     var recent = JSON.parse(localStorage.getItem("recentProjects") || "[]");
-    const historyBadge = document.getElementById("historyCountBadge");
+    const historyBadge =
+      document.getElementById("historyCountBadge");
 
     if (historyBadge) {
       historyBadge.textContent = `(${recent.length})`;
@@ -1982,17 +2064,28 @@ heroNavButtons.forEach(function (button) {
   updateProjectVisibility(currentCategory, currentSearchQuery);
   window.updateRecentlyViewed();
 
-  const clearBtn = document.getElementById("clearHistoryBtn");
+  const clearBtn =
+    document.getElementById("clearHistoryBtn");
+
   if (clearBtn) {
+
     clearBtn.addEventListener("click", () => {
+
       showConfirm(
         "Clear recently viewed projects?",
         () => {
+
           localStorage.removeItem("recentProjects");
+
           window.updateRecentlyViewed();
+
           showToast("History Cleared");
+
         }
+
       );
+
     });
+
   }
 });
