@@ -705,6 +705,20 @@
       "vault"
     ],
     "path": "security/password_manager/main.py"
+    "name": "High-Performance Multithreaded Web Scraper",
+    "emoji": "🕷️",
+    "category": "utilities",
+    "difficulty": "advanced",
+    "description": "Scrape web pages concurrently with rate limiting and JSON/CSV export.",
+    "keywords": [
+      "scraper",
+      "multithreaded",
+      "web",
+      "crawler",
+      "http",
+      "utility"
+    ],
+    "path": "utilities/multithreaded_scraper/main.py"
   },
   {
     "name": "2048 Game",
@@ -906,5 +920,23 @@
       "algorithm"
     ],
     "path": "utilities/N-Queens/N-Queens.py"
+  },
+  {
+    "name": "Mathematical Expression Parser",
+    "emoji": "🧮",
+    "category": "math",
+    "difficulty": "advanced",
+    "description": "Parse, tokenize, and evaluate mathematical expressions from scratch.",
+    "keywords": [
+      "math",
+      "parser",
+      "evaluator",
+      "ast",
+      "tokenizer",
+      "calculator"
+    ],
+    "path": "expression_parser/main.py"
   }
 ]
+
+
