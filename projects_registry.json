@@ -691,6 +691,20 @@
     "path": "games/Pygame-Chess/main.py"
   },
   {
+    "name": "Advanced Password Manager",
+    "emoji": "🔐",
+    "category": "security",
+    "difficulty": "beginner",
+    "description": "Secure password vault with SQLite database and stream encryption.",
+    "keywords": [
+      "password",
+      "manager",
+      "sqlite",
+      "security",
+      "encryption",
+      "vault"
+    ],
+    "path": "security/password_manager/main.py"
     "name": "High-Performance Multithreaded Web Scraper",
     "emoji": "🕷️",
     "category": "utilities",
