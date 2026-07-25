@@ -653,6 +653,7 @@ document.addEventListener("DOMContentLoaded", function () {
       card.classList.remove("active");
     });
     if (projectsSection) projectsSection.style.display = "none";
+    document.body.classList.add("sidebar-active");
     if (playgroundSection) {
       playgroundSection.style.display = "";
       if (
@@ -902,11 +903,6 @@ heroNavButtons.forEach(function (button) {
  
     const checkAndToggleSidebar = () => {
       if (playgroundActive) {
-        document.body.classList.remove("sidebar-active");
-        const fixedThemeToggle = document.getElementById("fixed-theme-toggle");
-        if (fixedThemeToggle) {
-          fixedThemeToggle.style.display = "block";
-        }
         return;
       }
 
@@ -928,16 +924,6 @@ heroNavButtons.forEach(function (button) {
  
       document.body.classList.toggle("sidebar-active", showSidebar);
       console.log('Sidebar active:', showSidebar, 'scrollY:', window.scrollY, 'playgroundActive:', playgroundActive);
-
-      const fixedThemeToggle = document.getElementById("fixed-theme-toggle");
-      if (fixedThemeToggle) {
-        if (showSidebar) {
-          fixedThemeToggle.style.display = "none";
-        }
-        else {
-          fixedThemeToggle.style.display = "block";
-        }
-      }
     };
  
     window.addEventListener('scroll', checkAndToggleSidebar);
