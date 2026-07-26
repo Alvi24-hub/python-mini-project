@@ -43,6 +43,7 @@ class RegistryValidator:
         self.errors = []
         self.warnings = []
         self.projects = []
+        self.validation_status = "PENDING"
 
     def load_registry(self):
         """Load registry JSON."""
@@ -180,6 +181,7 @@ class RegistryValidator:
         """Run all validation checks."""
 
         if not self.load_registry():
+            self.validation_status = "ABORTED"
             return
 
         self.validate_required_fields()
@@ -191,6 +193,11 @@ class RegistryValidator:
         self.validate_project_paths()
         self.validate_keywords()
 
+        if self.errors:
+            self.validation_status = "FAILED"
+        else:
+            self.validation_status = "PASSED"
+
     def report(self, json_output=False):
         if json_output:
             print(
@@ -199,11 +206,7 @@ class RegistryValidator:
                         "projects": len(self.projects),
                         "errors": len(self.errors),
                         "warnings": len(self.warnings),
-                        "status": (
-                            "passed"
-                            if not self.errors
-                            else "failed"
-                        ),
+                        "status": self.validation_status.lower(),
                     },
                     indent=2,
                 )
@@ -214,9 +217,24 @@ class RegistryValidator:
 
         print("\n========== Registry Validation ==========\n")
 
-        print(f"Projects scanned : {len(self.projects)}")
+        print(f"Status           : {self.validation_status}")
+        print(f"Registry         : {self.registry_path}")
+
+        projects_scanned = (
+            "N/A"
+            if self.validation_status == "ABORTED"
+            else len(self.projects)
+        )
+
+        print(f"Projects scanned : {projects_scanned}")
         print(f"Errors           : {len(self.errors)}")
         print(f"Warnings         : {len(self.warnings)}")
+
+        if self.validation_status == "ABORTED":
+            print(
+                "\nValidation aborted because "
+                "the registry could not be loaded."
+            )
 
         if self.errors:
             print("\nErrors:")
@@ -228,7 +246,7 @@ class RegistryValidator:
             for warning in self.warnings:
                 print(f"  - {warning}")
 
-        if not self.errors and not self.warnings:
+        if self.validation_status == "PASSED" and not self.warnings:
             print("\n✓ Registry validation passed successfully.")
 
 if __name__ == "__main__":
