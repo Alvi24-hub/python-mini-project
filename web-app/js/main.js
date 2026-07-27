@@ -684,37 +684,34 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  /* ── Playground Section Toggle ────────────────────────────── */
-  function showProjectsSection() {
-    playgroundActive = false;
-    if (playgroundSection) playgroundSection.style.display = "none";
-    if (projectsSection) projectsSection.style.display = "";
-    if (
-      window.playgroundAPI &&
-      typeof window.playgroundAPI.deactivate === "function"
-    ) {
-      window.playgroundAPI.deactivate();
-    }
+function showProjectsSection() {
+  playgroundActive = false;
+  if (playgroundSection) playgroundSection.style.display = "none";
+  if (projectsSection) projectsSection.style.display = "";
+  // ✅ Keep sidebar visible
+  document.body.classList.add("sidebar-active");
+  if (window.playgroundAPI && typeof window.playgroundAPI.deactivate === "function") {
+    window.playgroundAPI.deactivate();
   }
+}
 
-  function showPlaygroundSection() {
-    playgroundActive = true;
-    syncStickyTabs("playground");
-    var statsCards = document.querySelectorAll(".stats-card");
-    statsCards.forEach(function (card) {
-      card.classList.remove("active");
-    });
-    if (projectsSection) projectsSection.style.display = "none";
-    if (playgroundSection) {
-      playgroundSection.style.display = "";
-      if (
-        window.playgroundAPI &&
-        typeof window.playgroundAPI.activate === "function"
-      ) {
-        window.playgroundAPI.activate();
-      }
+function showPlaygroundSection() {
+  playgroundActive = true;
+  syncStickyTabs("playground");
+  var statsCards = document.querySelectorAll(".stats-card");
+  statsCards.forEach(function (card) {
+    card.classList.remove("active");
+  });
+  if (projectsSection) projectsSection.style.display = "none";
+  if (playgroundSection) {
+    playgroundSection.style.display = "";
+    // ✅ Keep sidebar visible
+    document.body.classList.add("sidebar-active");
+    if (window.playgroundAPI && typeof window.playgroundAPI.activate === "function") {
+      window.playgroundAPI.activate();
     }
   }
+}
 
   /* ── Sidebar Tabs ─────────────────────────────────────────── */
   sidebarTabs.forEach(function (st) {
@@ -952,39 +949,32 @@ document.addEventListener("DOMContentLoaded", function () {
   /* ── Sidebar Active Scroll Observer ───────────────────────── */
   if (!pageCategory && projectsSection) {
     console.log('Setting up sidebar observer');
-
-    const checkAndToggleSidebar = () => {
-      if (playgroundActive) {
-        document.body.classList.remove("sidebar-active");
-        const fixedThemeToggle = document.getElementById("fixed-theme-toggle");
-        if (fixedThemeToggle) {
-          fixedThemeToggle.style.display = "block";
-        }
-        return;
-      }
-
-      if (window.innerWidth <= 768) {
-        return;
-      }
-      const rect = projectsSection.getBoundingClientRect();
-      const heroSection = document.querySelector('.hero-section');
-      const heroBottom = heroSection ? heroSection.getBoundingClientRect().bottom : 0;
-      const showSidebar = rect.top < window.innerHeight && window.scrollY > heroBottom - 100;
-
-      document.body.classList.toggle("sidebar-active", showSidebar);
-      console.log('Sidebar active:', showSidebar, 'scrollY:', window.scrollY, 'playgroundActive:', playgroundActive);
-
-      const fixedThemeToggle = document.getElementById("fixed-theme-toggle");
-      if (fixedThemeToggle) {
-        if (showSidebar) {
-          fixedThemeToggle.style.display = "none";
-        }
-        else {
-          fixedThemeToggle.style.display = "block";
-        }
-      }
-    };
-
+ 
+    // ✅ KEEP SIDEBAR VISIBLE ALWAYS
+// ✅ FIXED: Keep sidebar visible in playground
+const checkAndToggleSidebar = () => {
+  // REMOVE the playground hiding logic entirely
+  // Just handle mobile vs desktop
+  
+  if (window.innerWidth <= 768) {
+    // On mobile, sidebar is controlled by hamburger menu
+    return;
+  }
+  
+  // On desktop, always show sidebar when projects section is visible
+  const rect = projectsSection.getBoundingClientRect();
+  const heroSection = document.querySelector('.hero-section');
+  const heroBottom = heroSection ? heroSection.getBoundingClientRect().bottom : 0;
+  const showSidebar = rect.top < window.innerHeight && window.scrollY > heroBottom - 100;
+  
+  document.body.classList.toggle("sidebar-active", showSidebar);
+  
+  const fixedThemeToggle = document.getElementById("fixed-theme-toggle");
+  if (fixedThemeToggle) {
+    fixedThemeToggle.style.display = showSidebar ? "none" : "block";
+  }
+};
+ 
     window.addEventListener('scroll', checkAndToggleSidebar);
     checkAndToggleSidebar();
   }

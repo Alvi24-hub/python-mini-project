@@ -30,7 +30,7 @@
   <title>Python Mini Projects — Interactive Web Edition</title>
   <link href="assets/favicon.svg" rel="icon" type="image/svg+xml" />
   <link rel="manifest" href="manifest.json" />
-  <link href="css/styles.css" rel="stylesheet" />
+  <link href="css/styles.css?v=2" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -516,38 +516,38 @@
                 class="fab fa-instagram"></i></a>
           </div>
         </div>
-        <div class="footer-links">
-          <h3>Quick Links</h3>
-          <ul>
-            <li><a href="#main-content" onclick="document.querySelector('[data-category=\'games\']').click()"><svg
-                  width="20" height="20" data-lucide="gamepad-2"></svg>Games</a>
+
+        <div class="footer-link-section">
+          <div class="footer-links">
+            <h3>Quick-Links</h3>
+            <ul>
+            <li><a href="#main-content" onclick="document.querySelector('[data-category=\'games\']').click()"><svg width="20" height="20" data-lucide="gamepad-2"></svg>Games</a>
             </li>
             <li><a href="#main-content" onclick="document.querySelector('[data-category=\'math\']').click()"><svg
                   width="20" height="20" data-lucide="sigma"></svg>Math</a>
             </li>
-            <li><a href="#main-content" onclick="document.querySelector('[data-category=\'utilities\']').click()"><svg
-                  width="20" height="20" data-lucide="wrench"></svg>Utilities</a></li>
-            <li><a href="#main-content" onclick="document.querySelector('[data-category=\'favorites\']').click()"><svg
-                  width="20" height="20" data-lucide="star"></svg>Favorites</a></li>
-            <li><a href="#main-content" onclick="document.querySelector('[data-category=\'playground\']').click()"><svg
-                  width="20" height="20" data-lucide="terminal"></svg>Playground</a></li>
-          </ul>
-        </div>
-        <div class="footer-links">
-          <h3>Resources</h3>
-          <ul>
-            <li><a href="https://github.com/steam-bell-92/python-mini-project#readme"><i class="fas fa-book"
-                  aria-hidden="true"></i> Documentation</a></li>
-            <li><a
-                href="https://github.com/steam-bell-92/python-mini-project/blob/a54ac8251fd79a6b7f4e43b54720c7f45225ac7e/CONTRIBUTING.md"><i
-                  class="fas fa-code-branch" aria-hidden="true"></i>
-                Contribute</a></li>
-            <li><a href="https://github.com/steam-bell-92/python-mini-project/issues/new"><i class="fas fa-bug"
-                  aria-hidden="true"></i> Report a Bug</a></li>
-            <li><a href="https://github.com/steam-bell-92/python-mini-project#readme"><i class="fas fa-question-circle"
-                  aria-hidden="true"></i> FAQ</a></li>
-          </ul>
-        </div>
+            <li><a href="#main-content"
+                onclick="document.querySelector('[data-category=\'utilities\']').click()"><svg width="20" height="20" data-lucide="wrench"></svg>Utilities</a></li>
+                <li><a href="#main-content" onclick="document.querySelector('[data-category=\'favorites\']').click()"><svg width="20" height="20" data-lucide="star"></svg>Favorites</a></li>
+                <li><a href="#main-content" onclick="document.querySelector('[data-category=\'playground\']').click()"><svg width="20" height="20" data-lucide="terminal"></svg>Playground</a></li>
+              </ul>
+            </div>
+            <div class="footer-links">
+              <h3>Resources</h3>
+              <ul>
+                <li><a href="https://github.com/steam-bell-92/python-mini-project#readme"><i
+                  class="fas fa-book" aria-hidden="true"></i> Documentation</a></li>
+                  <li><a
+                    href="https://github.com/steam-bell-92/python-mini-project/blob/a54ac8251fd79a6b7f4e43b54720c7f45225ac7e/CONTRIBUTING.md"><i
+                    class="fas fa-code-branch" aria-hidden="true"></i>
+                    Contribute</a></li>
+                    <li><a href="https://github.com/steam-bell-92/python-mini-project/issues/new"><i class="fas fa-bug"
+                      aria-hidden="true"></i> Report a Bug</a></li>
+                      <li><a href="faq.html"><i
+                        class="fas fa-question-circle" aria-hidden="true"></i> FAQ</a></li>
+                      </ul>
+                    </div>
+                  </div>
         <div class="footer-newsletter">
           <h3>Stay Updated</h3>
           <p>Get notified about new projects and features!</p>
@@ -619,7 +619,6 @@
   <script defer src="js/projects/spot-the-difference.js"></script>
   <script defer src="js/projects/sudoku-game.js"></script>
   <script defer src="js/projects/queens-logic-puzzle.js"></script>
-  <script defer src="js/projects/pattern-recall-game.js"></script>
   <script defer src="js/projects/color-palette.js"></script>
   <script src="js/projects/caesar-cipher.js"></script>
   <script src="js/projects/matrix-calculator.js"></script>
@@ -628,7 +627,7 @@
   <script defer src="js/projects/fourier-series.js"></script>
   <script defer src="js/projects/pathfinding-visualizer.js?v=2"></script>
   <script defer src="js/projects/tsp-visualizer.js"></script>
-  <script defer src="js/projects.js?v=3"></script>
+  <script defer src="js/projects.js?v=4"></script>
   <script defer src="js/cm-editor.js"></script>
   <script defer src="js/playground.js"></script>
   <script defer type="module" src="js/main.js?v=2"></script>
@@ -644,408 +643,402 @@
     });
   </script>
 
-  <!-- PROJECT LOADER - WITH FAVORITE BUTTONS -->
-  <script>
-    (function () {
-      const projectsGrid = document.getElementById("projectsGrid");
-      if (!projectsGrid) return;
-      // ALL projects from your js/projects/ folder
-      const projectsData = [
-        // GAMES (20+)
-        {
-          project: "number-sliding-puzzle",
-          title: "Number Sliding Puzzle",
-          category: "games",
-          difficulty: "Intermediate",
-          desc: "Arrange tiles in order by sliding them into empty space",
-          tags: "game,puzzle,sliding,numbers",
-        },
-        {
-          project: "2048-game",
-          title: "2048 Game",
-          category: "games",
-          desc: "Combine tiles and reach 2048!",
-          tags: "game,puzzle,2048",
-        },
-        {
-          project: "rock-paper-scissor",
-          title: "Rock Paper Scissor",
-          category: "games",
-          desc: "Classic hand game against AI",
-          tags: "game,rock,paper",
-        },
-        {
-          project: "dice-rolling",
-          title: "Dice Rolling",
-          category: "games",
-          desc: "Roll virtual dice",
-          tags: "game,dice",
-        },
-        {
-          project: "coin-flip",
-          title: "Coin Flip",
-          category: "games",
-          desc: "Flip a coin for decisions",
-          tags: "game,coin",
-        },
-        {
-          project: "number-guessing",
-          title: "Number Guessing",
-          category: "games",
-          desc: "Guess the secret number",
-          tags: "game,numbers",
-        },
-        {
-          project: "hangman",
-          title: "Hangman",
-          category: "games",
-          desc: "Classic word guessing game",
-          tags: "game,words",
-        },
-        {
-          project: "word-scramble",
-          title: "Word Scramble",
-          category: "games",
-          desc: "Unscramble letters to find words",
-          tags: "game,words",
-        },
-        {
-          project: "tic-tac-toe",
-          title: "Tic Tac Toe",
-          category: "games",
-          desc: "Classic X vs O game",
-          tags: "game,strategy",
-        },
-        {
-          project: "snake-game",
-          title: "Snake Game",
-          category: "games",
-          desc: "Classic snake eating game",
-          tags: "game,arcade",
-        },
-        {
-          project: "flappy-game",
-          title: "Flappy Game",
-          category: "games",
-          desc: "Flappy bird style game",
-          tags: "game,arcade",
-        },
-        {
-          project: "simon-says",
-          title: "Simon Says",
-          category: "games",
-          desc: "Memory pattern game",
-          tags: "game,memory",
-        },
-        {
-          project: "whack-a-mole",
-          title: "Whack a Mole",
-          category: "games",
-          desc: "Hit the moles as they pop up",
-          tags: "game,arcade",
-        },
-        {
-          project: "dots-boxes",
-          title: "Dots and Boxes",
-          category: "games",
-          desc: "Connect dots to complete boxes",
-          tags: "game,strategy",
-        },
-        {
-          project: "emoji-memory-game",
-          title: "Emoji Memory",
-          category: "games",
-          desc: "Match pairs of emojis",
-          tags: "game,memory",
-        },
-        {
-          project: "spot-the-difference",
-          title: "Spot the Difference",
-          category: "games",
-          desc: "Find differences between images",
-          tags: "game,puzzle",
-        },
-        {
-          project: "minesweeper",
-          title: "Minesweeper",
-          category: "games",
-          desc: "Clear the minefield without detonating any mines!",
-          tags: "game,puzzle,logic,minesweeper",
-        },
-        {
-          project: "flames",
-          title: "FLAMES Game",
-          category: "games",
-          desc: "Friendship relationship calculator",
-          tags: "game,relationship",
-        },
-        {
-          project: "sudoku-game",
-          title: "Sudoku Solver & Game",
-          category: "games",
-          desc: "Interactive Sudoku with difficulty levels and visual backtracking solver",
-          tags: "game,puzzle,backtracking,solver",
-        },
-        {
-          project: "queens-logic-puzzle",
-          title: "Queens Logic Puzzle",
-          category: "games",
-          desc: "Place queens following row, column, region, and adjacency rules!",
-          tags: "game,puzzle,logic,queens,strategy",
-        },
-        {
-          project: "pattern-recall-game",
-          title: "Pattern Recall Game",
-          category: "games",
-          desc: "Watch and recreate the pattern within 10 seconds!",
-          tags: "game,memory,pattern,recall,puzzle",
-        },
-        {
-          project: "chess",
-          title: "Chess Game",
-          category: "games",
-          desc: "Play a standard game of Chess locally or against a basic AI!",
-          tags: "chess, strategy, board game, 2 player, ai, minimax",
-        },
-        {
-          project: "war-card-game",
-          title: "War Card Game",
-          category: "games",
-          desc: "A classic two-player card game based on comparing rank values",
-          tags: "game,cards,multiplayer,war",
-        },
+  <!-- PROJECT LOADER - WITH FAVORITE BUTTONS & FIXED MODAL -->
+<script>
+  (function () {
+    const projectsGrid = document.getElementById("projectsGrid");
+    if (!projectsGrid) return;
+    
+    // ALL projects from your js/projects/ folder
+    const projectsData = [
+      // GAMES (20+)
+      {
+        project: "number-sliding-puzzle",
+        title: "Number Sliding Puzzle",
+        category: "games",
+        difficulty: "Intermediate",
+        desc: "Arrange tiles in order by sliding them into empty space",
+        tags: "game,puzzle,sliding,numbers",
+      },
+      {
+        project: "2048-game",
+        title: "2048 Game",
+        category: "games",
+        desc: "Combine tiles and reach 2048!",
+        tags: "game,puzzle,2048",
+      },
+      {
+        project: "rock-paper-scissor",
+        title: "Rock Paper Scissor",
+        category: "games",
+        desc: "Classic hand game against AI",
+        tags: "game,rock,paper",
+      },
+      {
+        project: "dice-rolling",
+        title: "Dice Rolling",
+        category: "games",
+        desc: "Roll virtual dice",
+        tags: "game,dice",
+      },
+      {
+        project: "coin-flip",
+        title: "Coin Flip",
+        category: "games",
+        desc: "Flip a coin for decisions",
+        tags: "game,coin",
+      },
+      {
+        project: "number-guessing",
+        title: "Number Guessing",
+        category: "games",
+        desc: "Guess the secret number",
+        tags: "game,numbers",
+      },
+      {
+        project: "hangman",
+        title: "Hangman",
+        category: "games",
+        desc: "Classic word guessing game",
+        tags: "game,words",
+      },
+      {
+        project: "word-scramble",
+        title: "Word Scramble",
+        category: "games",
+        desc: "Unscramble letters to find words",
+        tags: "game,words",
+      },
+      {
+        project: "tic-tac-toe",
+        title: "Tic Tac Toe",
+        category: "games",
+        desc: "Classic X vs O game",
+        tags: "game,strategy",
+      },
+      {
+        project: "snake-game",
+        title: "Snake Game",
+        category: "games",
+        desc: "Classic snake eating game",
+        tags: "game,arcade",
+      },
+      {
+        project: "flappy-game",
+        title: "Flappy Game",
+        category: "games",
+        desc: "Flappy bird style game",
+        tags: "game,arcade",
+      },
+      {
+        project: "simon-says",
+        title: "Simon Says",
+        category: "games",
+        desc: "Memory pattern game",
+        tags: "game,memory",
+      },
+      {
+        project: "whack-a-mole",
+        title: "Whack a Mole",
+        category: "games",
+        desc: "Hit the moles as they pop up",
+        tags: "game,arcade",
+      },
+      {
+        project: "dots-boxes",
+        title: "Dots and Boxes",
+        category: "games",
+        desc: "Connect dots to complete boxes",
+        tags: "game,strategy",
+      },
+      {
+        project: "emoji-memory-game",
+        title: "Emoji Memory",
+        category: "games",
+        desc: "Match pairs of emojis",
+        tags: "game,memory",
+      },
+      {
+        project: "spot-the-difference",
+        title: "Spot the Difference",
+        category: "games",
+        desc: "Find differences between images",
+        tags: "game,puzzle",
+      },
+      {
+        project: "minesweeper",
+        title: "Minesweeper",
+        category: "games",
+        desc: "Clear the minefield without detonating any mines!",
+        tags: "game,puzzle,logic,minesweeper",
+      },
+      {
+        project: "flames",
+        title: "FLAMES Game",
+        category: "games",
+        desc: "Friendship relationship calculator",
+        tags: "game,relationship",
+      },
+      {
+        project: "sudoku-game",
+        title: "Sudoku Solver & Game",
+        category: "games",
+        desc: "Interactive Sudoku with difficulty levels and visual backtracking solver",
+        tags: "game,puzzle,backtracking,solver",
+      },
+      {
+        project: "queens-logic-puzzle",
+        title: "Queens Logic Puzzle",
+        category: "games",
+        desc: "Place queens following row, column, region, and adjacency rules!",
+        tags: "game,puzzle,logic,queens,strategy",
+      },
+      {
+        project: "chess",
+        title: "Chess Game",
+        category: "games",
+        desc: "Play a standard game of Chess locally or against a basic AI!",
+        tags: "chess, strategy, board game, 2 player, ai, minimax",
+      },
+      {
+        project: "war-card-game",
+        title: "War Card Game",
+        category: "games",
+        desc: "A classic two-player card game based on comparing rank values",
+        tags: "game,cards,multiplayer,war",
+      },
 
-        // MATH (15+)
-        {
-          project: "binary-search",
-          title: "Binary Search",
-          category: "math",
-          desc: "Visualize binary search algorithm",
-          tags: "math,algorithm",
-        },
-        {
-          project: "sorting-visualizer",
-          title: "Sorting Visualizer",
-          category: "math",
-          desc: "Visualize multi-algorithm sorting (Bubble, Selection, Insertion, Quick)",
-          tags: "math,algorithm,sorting",
-        },
-        {
-          project: "quick-sort",
-          title: "Quick Sort",
-          category: "math",
-          desc: "Visualize quick sort algorithm with pivot partitioning",
-          tags: "math,algorithm",
-        },
-        {
-          project: "merge-sort",
-          title: "Merge Sort",
-          category: "math",
-          desc: "Visualize merge sort algorithm with divide-and-conquer approach",
-          tags: "math,algorithm",
-        },
-        {
-          project: "fibonacci",
-          title: "Fibonacci",
-          category: "math",
-          desc: "Generate Fibonacci sequence",
-          tags: "math,numbers",
-        },
-        {
-          project: "pascal-triangle",
-          title: "Pascal Triangle",
-          category: "math",
-          desc: "Generate Pascal's triangle",
-          tags: "math,numbers",
-        },
-        {
-          project: "armstrong",
-          title: "Armstrong Number",
-          category: "math",
-          desc: "Check Armstrong numbers",
-          tags: "math,numbers",
-        },
-        {
-          project: "collatz",
-          title: "Collatz Conjecture",
-          category: "math",
-          desc: "3n+1 sequence analyzer",
-          tags: "math,numbers",
-        },
-        {
-          project: "prime-analyzer",
-          title: "Prime Analyzer",
-          category: "math",
-          desc: "Prime number checker",
-          tags: "math,numbers",
-        },
-        {
-          project: "projectile-motion",
-          title: "Projectile Motion",
-          category: "math",
-          desc: "Physics projectile calculator",
-          tags: "math,physics",
-        },
-        {
-          project: "progression-recognizer",
-          title: "Progression Recognizer",
-          category: "math",
-          desc: "Recognize sequences",
-          tags: "math,sequences",
-        },
-        {
-          project: "matrix-calculator",
-          title: "Matrix Calculator",
-          category: "math",
-          desc: "Add, subtract, multiply, transpose, determinant, rank, inverse",
-          tags: "math,matrix,algebra,calculator",
-        },
-        {
-          project: "reverse-hangman",
-          title: "Reverse Hangman",
-          category: "games",
-          desc: "Computer tries to guess your secret word using AI logic",
-          tags: "game,hangman,ai,word,guessing",
-        },
-        {
-          project: "coordinate-polar-transform",
-          title: "Coordinate Transform",
-          category: "math",
-          desc: "Convert between coordinate systems",
-          tags: "math,coordinates",
-        },
-        {
-          project: "complete-calculus-engine",
-          title: "Complete Calculus Engine",
-          category: "math",
-          desc: "Calculate derivatives",
-          tags: "math,calculus",
-        },
-        {
-          project: "tower-of-hanoi",
-          title: "Tower of Hanoi",
-          category: "utilities",
-          desc: "Solve Tower of Hanoi puzzle",
-          tags: "utility,puzzle",
-        },
-        {
-          project: "math-quiz",
-          title: "Math Quiz",
-          category: "math",
-          desc: "Test your math skills",
-          tags: "math,quiz",
-        },
-        {
-          project: "fourier-series",
-          title: "Fourier Series Visualizer",
-          category: "math",
-          desc: "Explore waveform approximation using harmonics",
-          tags: "math,fourier,wave,harmonics",
-        },
+      // MATH (15+)
+      {
+        project: "binary-search",
+        title: "Binary Search",
+        category: "math",
+        desc: "Visualize binary search algorithm",
+        tags: "math,algorithm",
+      },
+      {
+        project: "sorting-visualizer",
+        title: "Sorting Visualizer",
+        category: "math",
+        desc: "Visualize multi-algorithm sorting (Bubble, Selection, Insertion, Quick)",
+        tags: "math,algorithm,sorting",
+      },
+      {
+        project: "quick-sort",
+        title: "Quick Sort",
+        category: "math",
+        desc: "Visualize quick sort algorithm with pivot partitioning",
+        tags: "math,algorithm",
+      },
+      {
+        project: "merge-sort",
+        title: "Merge Sort",
+        category: "math",
+        desc: "Visualize merge sort algorithm with divide-and-conquer approach",
+        tags: "math,algorithm",
+      },
+      {
+        project: "fibonacci",
+        title: "Fibonacci",
+        category: "math",
+        desc: "Generate Fibonacci sequence",
+        tags: "math,numbers",
+      },
+      {
+        project: "pascal-triangle",
+        title: "Pascal Triangle",
+        category: "math",
+        desc: "Generate Pascal's triangle",
+        tags: "math,numbers",
+      },
+      {
+        project: "armstrong",
+        title: "Armstrong Number",
+        category: "math",
+        desc: "Check Armstrong numbers",
+        tags: "math,numbers",
+      },
+      {
+        project: "collatz",
+        title: "Collatz Conjecture",
+        category: "math",
+        desc: "3n+1 sequence analyzer",
+        tags: "math,numbers",
+      },
+      {
+        project: "prime-analyzer",
+        title: "Prime Analyzer",
+        category: "math",
+        desc: "Prime number checker",
+        tags: "math,numbers",
+      },
+      {
+        project: "projectile-motion",
+        title: "Projectile Motion",
+        category: "math",
+        desc: "Physics projectile calculator",
+        tags: "math,physics",
+      },
+      {
+        project: "progression-recognizer",
+        title: "Progression Recognizer",
+        category: "math",
+        desc: "Recognize sequences",
+        tags: "math,sequences",
+      },
+      {
+        project: "matrix-calculator",
+        title: "Matrix Calculator",
+        category: "math",
+        desc: "Add, subtract, multiply, transpose, determinant, rank, inverse",
+        tags: "math,matrix,algebra,calculator",
+      },
+      {
+        project: "reverse-hangman",
+        title: "Reverse Hangman",
+        category: "games",
+        desc: "Computer tries to guess your secret word using AI logic",
+        tags: "game,hangman,ai,word,guessing",
+      },
+      {
+        project: "coordinate-polar-transform",
+        title: "Coordinate Transform",
+        category: "math",
+        desc: "Convert between coordinate systems",
+        tags: "math,coordinates",
+      },
+      {
+        project: "complete-calculus-engine",
+        title: "Complete Calculus Engine",
+        category: "math",
+        desc: "Calculate derivatives",
+        tags: "math,calculus",
+      },
+      {
+        project: "tower-of-hanoi",
+        title: "Tower of Hanoi",
+        category: "utilities",
+        desc: "Solve Tower of Hanoi puzzle",
+        tags: "utility,puzzle",
+      },
+      {
+        project: "math-quiz",
+        title: "Math Quiz",
+        category: "math",
+        desc: "Test your math skills",
+        tags: "math,quiz",
+      },
+      {
+        project: "fourier-series",
+        title: "Fourier Series Visualizer",
+        category: "math",
+        desc: "Explore waveform approximation using harmonics",
+        tags: "math,fourier,wave,harmonics",
+      },
 
-        // UTILITIES (10+)
-        {
-          project: "pathfinding-visualizer",
-          title: "Pathfinding Visualizer",
-          category: "utilities",
-          desc: "Interactive visualizer for Dijkstra and A* algorithms",
-          tags: "utility,algorithm,visualizer,pathfinding"
-        },
-        {
-          project: "budget-tracker",
-          title: "Budget Tracker",
-          category: "utilities",
-          desc: "Track income and expenses, view categories, and persist data locally",
-          tags: "utility,finance,tracker,money"
-        },
-        {
-          project: "morse-code",
-          title: "Morse Code",
-          category: "utilities",
-          desc: "Convert text to Morse code",
-          tags: "utility,converter",
-        },
-        {
-          project: "number-converter",
-          title: "Number Converter",
-          category: "utilities",
-          desc: "Convert between number systems",
-          tags: "utility,converter",
-        },
-        {
-          project: "password-forge",
-          title: "Password Forge",
-          category: "utilities",
-          desc: "Generate strong passwords",
-          tags: "utility,security",
-        },
-        {
-          project: "typing-speed-tester",
-          title: "Typing Speed Tester",
-          category: "utilities",
-          desc: "Test your typing speed",
-          tags: "utility,typing",
-        },
-        {
-          project: "productive-pet",
-          title: "Productive Pet",
-          category: "utilities",
-          desc: "Virtual productivity pet",
-          tags: "utility,pet",
-        },
-        {
-          project: "color-palette",
-          title: "Color Palette",
-          category: "utilities",
-          desc: "Generate color palettes",
-          tags: "utility,design",
-        },
-        {
-          project: "calculator",
-          title: "Scientific Graphing Calculator",
-          category: "math",
-          desc: "A scientific graphing calculator",
-          tags: "math,calculator",
-        },
-        {
-          project: "progress-tracker",
-          title: "Progress Tracker",
-          category: "utilities",
-          desc: "Track your learning progress",
-          tags: "utility,tracker",
-        },
-        {
-          project: "caesar-cipher",
-          title: "Caesar Cipher",
-          category: "utilities",
-          desc: "Encrypt and decrypt messages with a shift cipher",
-          tags: "utility,cipher,encryption,decryption",
-        },
-        {
-          project: "unit-converter",
-          title: "Unit Converter",
-          category: "utilities",
-          desc: "Converts values between different units",
-          tags: "utility,tool",
-        },
-        {
-          project: "tsp-visualizer",
-          title: "TSP Visualizer",
-          category: "utilities",
-          desc: "Visualize the Traveling Salesperson Problem",
-          tags: "utility,algorithm,visualizer,tsp",
-        },
-      ];
+      // UTILITIES (10+)
+      {
+        project: "pathfinding-visualizer",
+        title: "Pathfinding Visualizer",
+        category: "utilities",
+        desc: "Interactive visualizer for Dijkstra and A* algorithms",
+        tags: "utility,algorithm,visualizer,pathfinding"
+      },
+      {
+        project: "budget-tracker",
+        title: "Budget Tracker",
+        category: "utilities",
+        desc: "Track income and expenses, view categories, and persist data locally",
+        tags: "utility,finance,tracker,money"
+      },
+      {
+        project: "morse-code",
+        title: "Morse Code",
+        category: "utilities",
+        desc: "Convert text to Morse code",
+        tags: "utility,converter",
+      },
+      {
+        project: "number-converter",
+        title: "Number Converter",
+        category: "utilities",
+        desc: "Convert between number systems",
+        tags: "utility,converter",
+      },
+      {
+        project: "password-forge",
+        title: "Password Forge",
+        category: "utilities",
+        desc: "Generate strong passwords",
+        tags: "utility,security",
+      },
+      {
+        project: "typing-speed-tester",
+        title: "Typing Speed Tester",
+        category: "utilities",
+        desc: "Test your typing speed",
+        tags: "utility,typing",
+      },
+      {
+        project: "productive-pet",
+        title: "Productive Pet",
+        category: "utilities",
+        desc: "Virtual productivity pet",
+        tags: "utility,pet",
+      },
+      {
+        project: "color-palette",
+        title: "Color Palette",
+        category: "utilities",
+        desc: "Generate color palettes",
+        tags: "utility,design",
+      },
+      {
+        project: "calculator",
+        title: "Scientific Graphing Calculator",
+        category: "math",
+        desc: "A scientific graphing calculator",
+        tags: "math,calculator",
+      },
+      {
+        project: "progress-tracker",
+        title: "Progress Tracker",
+        category: "utilities",
+        desc: "Track your learning progress",
+        tags: "utility,tracker",
+      },
+      {
+        project: "caesar-cipher",
+        title: "Caesar Cipher",
+        category: "utilities",
+        desc: "Encrypt and decrypt messages with a shift cipher",
+        tags: "utility,cipher,encryption,decryption",
+      },
+      {
+        project: "unit-converter",
+        title: "Unit Converter",
+        category: "utilities",
+        desc: "Converts values between different units",
+        tags: "utility,tool",
+      },
+      {
+        project: "tsp-visualizer",
+        title: "TSP Visualizer",
+        category: "utilities",
+        desc: "Visualize the Traveling Salesperson Problem",
+        tags: "utility,algorithm,visualizer,tsp",
+      },
+    ];
 
-      projectsGrid.innerHTML = "";
+    projectsGrid.innerHTML = "";
 
-      // Get favorites from localStorage
-      let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+    // Get favorites from localStorage
+    let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 
-      // Function to save favorites
-      function saveFavorites() {
-        localStorage.setItem("favorites", JSON.stringify(favorites));
-      }
+    // Function to save favorites
+    function saveFavorites() {
+      localStorage.setItem("favorites", JSON.stringify(favorites));
+    }
 
       projectsData.forEach((proj) => {
         const card = document.createElement("div");
