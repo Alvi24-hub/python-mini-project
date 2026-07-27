@@ -301,10 +301,8 @@ function initTypingSpeedTester() {
     }
     
     function updateStats() {
-        const combinedCorrect = sessionCorrect + currentCorrect;
-        const combinedIncorrect = sessionIncorrect + currentIncorrect;
-        const total = combinedCorrect + combinedIncorrect;
-        const accuracy = total > 0 ? Math.round((combinedCorrect / total) * 100) : 0;
+        const total = sessionCorrect + sessionIncorrect;
+        const accuracy = total > 0 ? Math.round((sessionCorrect / total) * 100) : 0;
         if (statWpm) statWpm.textContent = calculateWPM().toString();
         if (statAccuracy) statAccuracy.textContent = accuracy + '%';
         if (statCorrect) statCorrect.textContent = combinedCorrect;
@@ -317,8 +315,7 @@ function initTypingSpeedTester() {
         if (!startTime) return 0;
         const elapsedMinutes = (Date.now() - startTime) / 60000;
         if (elapsedMinutes <= 0) return 0;
-        const combinedCorrect = sessionCorrect + currentCorrect;
-        const words = combinedCorrect / 5; // Standard: 5 chars = 1 word
+        const words = sessionCorrect / 5; // Standard: 5 chars = 1 word
         return Math.round(words / elapsedMinutes);
     }
     
@@ -431,7 +428,7 @@ function initTypingSpeedTester() {
         
         // Check if sentence is complete
         if (typed.length >= sentence.length) {
-            // Fold this sentence's results into the running session totals
+            // Accumulate completed sentence into session totals
             sessionCorrect += currentCorrect;
             sessionIncorrect += currentIncorrect;
             sentencesCompleted++;
