@@ -170,8 +170,8 @@ def main():
                     best_dist = 0
                 elif event.key == pygame.K_1:
                     if len(nodes) > 1:
-                        order, best_dist = solve_nearest_neighbor(nodes
-                                                                  
+                        order, best_dist = solve_nearest_neighbor(nodes)
+
                 elif event.key == pygame.K_2:
                     if len(nodes) > 1:
                         if len(nodes) > 10:
@@ -179,7 +179,7 @@ def main():
                             pygame.display.update()
                             pygame.time.delay(2000)
                         else:
-                            order, best_dist = solve_brute_force(nodes
+                            order, best_dist = solve_brute_force(nodes)
 
     pygame.quit()
                                
