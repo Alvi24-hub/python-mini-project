@@ -33,7 +33,6 @@ INTER_CHAR_GAP = 300   # ms  – silence between letters
 WORD_GAP       = 700   # ms  – silence for word separator '/'
 BEEP_FREQ      = 700   # Hz  – comfortable mid-range tone
 
-def main():
 
 def _sleep_ms(ms: int) -> None:
     """Sleep for *ms* milliseconds."""
@@ -263,4 +262,3 @@ if __name__ == "__main__":
     except Exception as exc:
         log_exception("Text-to-Morse", exc)
         raise
-    main()
