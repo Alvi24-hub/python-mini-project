@@ -119,15 +119,15 @@ function applyThemeMode(mode) {
       theme === 'light'
         ? '<i class="fas fa-sun" aria-hidden="true"></i>'
         : '<i class="fas fa-moon" aria-hidden="true"></i>';
-    updateThemeToggleAria(newTheme === 'light');
+    updateThemeToggleAria(theme === 'light');
   });
 }
 
 const savedTheme = localStorage.getItem('theme') || 'dark';
 html.setAttribute('data-theme', savedTheme);
 syncThemeColor(savedTheme);
-if (themeToggle) {
-  themeToggle.innerHTML =
+if (themeToggles) {
+  themeToggles.innerHTML =
     savedTheme === 'light'
       ? '<i class="fas fa-sun" aria-hidden="true"></i>'
       : '<i class="fas fa-moon" aria-hidden="true"></i>';
@@ -209,7 +209,7 @@ function showInfoModal(title, steps) {
     newClose.addEventListener("click", function (e) {
       e.preventDefault();
       closeModal();
-    };
+    });
   }
 
   if (gotItBtn) {
@@ -218,7 +218,7 @@ function showInfoModal(title, steps) {
     newGotIt.addEventListener("click", function (e) {
       e.preventDefault();
       closeModal();
-    };
+    });
   }
 
   overlay.onclick = function (e) {
@@ -363,6 +363,51 @@ document.addEventListener("DOMContentLoaded", function () {
       node.textContent = value;
     });
   }
+
+  // Theme toggle
+themeToggles.forEach((toggle) => {
+  toggle.addEventListener("click", () => {
+    const current =
+      document.documentElement.getAttribute("data-theme") === "dark"
+        ? "dark"
+        : "light";
+
+    const next = current === "dark" ? "light" : "dark";
+    applyThemeMode(next);
+    setThemePickerLabel(next);
+  });
+});
+
+// Appearance dropdown
+if (themeModePicker && themeModeMenu) {
+  themeModePicker.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    if (themeModeMenu.classList.contains("active")) {
+      closeThemeMenu();
+    } else {
+      openThemeMenu();
+    }
+  });
+
+  themeModeMenu.querySelectorAll(".theme-picker-option").forEach((option) => {
+    option.addEventListener("click", () => {
+      const mode = option.dataset.value;
+      applyThemeMode(mode);
+      setThemePickerLabel(mode);
+      closeThemeMenu();
+    });
+  });
+
+  document.addEventListener("click", (e) => {
+    if (
+      !themeModePicker.contains(e.target) &&
+      !themeModeMenu.contains(e.target)
+    ) {
+      closeThemeMenu();
+    }
+  });
+}
 
   /* ── Sound Toggle (Multi-Element Support) ─────────────────────────── */
   var soundToggles = document.querySelectorAll(".sound-toggle");

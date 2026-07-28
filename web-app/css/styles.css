@@ -529,6 +529,7 @@ body.sidebar-active .sidebar-dock {
 
 .sidebar-controls {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
   width: 100%;
@@ -557,7 +558,7 @@ body.sidebar-active .sidebar-dock {
   gap: 0.35rem;
   min-width: 160px;
   max-width: 220px;
-  flex: 1 1 160px;
+  /* flex: 1 1 160px; */
 }
 
 .theme-selector-label {
@@ -644,6 +645,10 @@ body.sidebar-active .sidebar-dock {
 .theme-picker-option[aria-selected="true"] {
   background: var(--accent-soft);
   color: var(--text);
+}
+
+body.sidebar-collapsed .theme-picker {
+  display: none ;
 }
 
 [data-theme="dark"] .theme-picker {

@@ -30,7 +30,7 @@
   <title>Python Mini Projects — Interactive Web Edition</title>
   <link href="assets/favicon.svg" rel="icon" type="image/svg+xml" />
   <link rel="manifest" href="manifest.json" />
-  <link href="css/styles.css?v=2" rel="stylesheet" />
+  <link href="css/styles.css?v=3" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -170,25 +170,25 @@
           <button aria-label="Switch theme" class="theme-toggle" id="sidebarThemeToggle" type="button">
             <i class="fas fa-moon" aria-hidden="true"></i>
           </button>
-          <div class="theme-selector">
-            <span class="theme-selector-label">Appearance</span>
-            <button id="themeModePicker" class="theme-picker" type="button" aria-haspopup="listbox"
-              aria-expanded="false">
-              <span class="theme-picker-value">Auto (System)</span>
-              <i class="fas fa-chevron-down theme-picker-chevron" aria-hidden="true"></i>
-            </button>
-            <ul id="themeModeMenu" class="theme-picker-menu" role="listbox" aria-label="Theme mode options">
-              <li role="option" class="theme-picker-option" data-value="auto" aria-selected="true">
-                Auto (System)
-              </li>
-              <li role="option" class="theme-picker-option" data-value="light" aria-selected="false">
-                Light
-              </li>
-              <li role="option" class="theme-picker-option" data-value="dark" aria-selected="false">
-                Dark
-              </li>
-            </ul>
-          </div>
+        </div>
+        <div class="theme-selector">
+          <span class="theme-selector-label">Appearance</span>
+          <button id="themeModePicker" class="theme-picker" type="button" aria-haspopup="listbox"
+            aria-expanded="false">
+            <span class="theme-picker-value">Auto (System)</span>
+            <i class="fas fa-chevron-down theme-picker-chevron" aria-hidden="true"></i>
+          </button>
+          <ul id="themeModeMenu" class="theme-picker-menu" role="listbox" aria-label="Theme mode options">
+            <li role="option" class="theme-picker-option" data-value="auto" aria-selected="true">
+              Auto (System)
+            </li>
+            <li role="option" class="theme-picker-option" data-value="light" aria-selected="false">
+              Light
+            </li>
+            <li role="option" class="theme-picker-option" data-value="dark" aria-selected="false">
+              Dark
+            </li>
+          </ul>
         </div>
 
         <button aria-label="Toggle Sidebar" class="collapse-sidebar-btn" id="sidebarCollapseBtn" type="button">
@@ -630,7 +630,7 @@
   <script defer src="js/projects.js?v=4"></script>
   <script defer src="js/cm-editor.js"></script>
   <script defer src="js/playground.js"></script>
-  <script defer type="module" src="js/main.js?v=2"></script>
+  <script defer type="module" src="js/main.js?v=3"></script>
   <script defer src="js/hero-canvas.js"></script>
   <script defer src="js/projects/war-card-game.js"></script>
   <script defer src="js/projects/number-sliding-puzzle.js"></script>
@@ -1282,7 +1282,7 @@
     })();
   </script>
 
-  //THEME TOGGLE
+  <!-- THEME TOGGLE -->
   <script>
     (function () {
       const html = document.documentElement;
