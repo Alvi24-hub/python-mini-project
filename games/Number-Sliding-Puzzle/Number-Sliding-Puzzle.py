@@ -11,11 +11,11 @@ from utils.validation import get_int, get_yes_no
 def is_solvable(numbers):
     """
     Determines if the 8-puzzle board configuration is solvable.
-    An 8-puzzle (3x3 grid) is solvable if the number of inversions is even.
-    The blank tile (0) is ignored when counting inversions. 
+    For a 3x3 puzzle, the state is solvable if and only if
+    (inversions + blank_row_from_bottom) is odd.
+    The blank tile (0) is ignored when counting inversions.
     """
-    # Filter out the blank tile(0)
-
+    # Filter out the blank tile (0) for inversion counting
     tiles = [n for n in numbers if n != 0]
     inversions = 0
     for i in range(len(tiles)):
@@ -23,9 +23,13 @@ def is_solvable(numbers):
             if tiles[i] > tiles[j]:
                 inversions += 1
 
-    # return True if inversions count is even, False otherwise
+    # Find blank tile row from the bottom (1=bottom, 2=middle, 3=top)
+    blank_idx = numbers.index(0)
+    blank_row_from_top = blank_idx // 3  # 0=top, 1=middle, 2=bottom
+    blank_row_from_bottom = 3 - blank_row_from_top
 
-    return inversions % 2 == 0
+    # Solvable if (inversions + blank_row_from_bottom) is odd
+    return (inversions + blank_row_from_bottom) % 2 == 1
 
 
 def main():

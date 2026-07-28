@@ -23,11 +23,7 @@ def get_remaining_sequence(n: int) -> List[int]:
 def collatz_sequence(start: int) -> Generator[int, None, None]:
     """Generate the Collatz sequence starting from the given number."""
     if start in steps_cache:
-        n = start
-        yield n
-        while n != 1:
-            n = collatz_next(n)
-            yield n
+        yield from get_remaining_sequence(start)
         return
 
     n = start

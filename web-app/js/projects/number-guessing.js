@@ -174,6 +174,24 @@ function getNumberGuessingHTML() {
                 border-radius: 10px;
                 cursor: pointer;
                 font-size: 1.2rem;
+                font-weight: 600;
+                transition: all 0.2s ease;
+            }
+
+            .btn-guess:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+                filter: brightness(1.05);
+            }
+
+            .btn-guess:active {
+                transform: translateY(0);
+            }
+
+            .btn-guess:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                transform: none;
             }
 
             .keyboard-hint {
@@ -224,87 +242,34 @@ function getNumberGuessingHTML() {
                 border-radius: 10px;
                 cursor: pointer;
                 font-size: 1rem;
+                font-weight: 600;
+                transition: all 0.2s ease;
             }
 
             .btn-reset        { background: var(--primary-color); }
             .btn-change-diff  { background: var(--surface-color); color: var(--text-color); border: 2px solid var(--border-color); }
             .btn-change-diff:hover { border-color: var(--primary-color); }
 
-            /* Guess button */
-.btn-guess {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 1rem 2rem;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1.2rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
+            .btn-reset:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+                filter: brightness(1.05);
+            }
 
-.btn-guess:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    filter: brightness(1.05);
-}
+            .btn-reset:active {
+                transform: translateY(0);
+            }
 
-.btn-guess:active {
-    transform: translateY(0);
-}
+            .btn-change-diff:hover {
+                border-color: var(--primary-color);
+                transform: translateY(-2px);
+                background: var(--primary-color);
+                color: white;
+            }
 
-.btn-guess:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* Reset / New Game button */
-.btn-reset {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.85rem 1.75rem;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.btn-reset:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    filter: brightness(1.05);
-}
-
-.btn-reset:active {
-    transform: translateY(0);
-}
-
-/* Change Difficulty button */
-.btn-change-diff {
-    background: var(--surface-color);
-    color: var(--text-color);
-    border: 2px solid var(--border-color);
-    padding: 0.85rem 1.75rem;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.btn-change-diff:hover {
-    border-color: var(--primary-color);
-    transform: translateY(-2px);
-    background: var(--primary-color);
-    color: white;
-}
-
-.btn-change-diff:active {
-    transform: translateY(0);
-}
+            .btn-change-diff:active {
+                transform: translateY(0);
+            }
         </style>
     `;
 }

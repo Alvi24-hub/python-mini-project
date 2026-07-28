@@ -704,7 +704,7 @@
       "encryption",
       "vault"
     ],
-    "path": "security/password_manager/main.py"
+    "path": "security/password_manager/main.py",
     "name": "High-Performance Multithreaded Web Scraper",
     "emoji": "🕷️",
     "category": "utilities",
