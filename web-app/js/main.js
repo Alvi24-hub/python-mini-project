@@ -219,7 +219,7 @@ function showInfoModal(title, steps) {
       e.preventDefault();
       e.stopPropagation();
       closeModal();
-    });
+    };
   }
 
   if (gotItBtn) {
@@ -227,7 +227,7 @@ function showInfoModal(title, steps) {
       e.preventDefault();
       e.stopPropagation();
       closeModal();
-    });
+    };
   }
 
   overlay.onclick = function(e) {
@@ -1632,106 +1632,119 @@ function openProjectSafe(name, trigger) {
     }
 
     // Load the project
-    setTimeout(function() {
+setTimeout(function() {
+  try {
+    var htmlContent = null;
+    
+    if (typeof getProjectHTML === 'function') {
       try {
-        var htmlContent = null;
-        
-        // Try getProjectHTML from project.js
-        if (typeof getProjectHTML === 'function') {
-          try {
-            htmlContent = getProjectHTML(name);
-            console.log('📄 getProjectHTML returned:', htmlContent ? 'content' : 'null');
-          } catch(e) {
-            console.warn('getProjectHTML error:', e.message);
-          }
-        }
-        
-        // If that failed, try direct function
-        if (!htmlContent || htmlContent.trim().length < 50 || htmlContent.includes('error-state')) {
-          var fnName = 'get' + name.split('-').map(function(w) {
-            return w.charAt(0).toUpperCase() + w.slice(1);
-          }).join('') + 'HTML';
-          
-          if (typeof window[fnName] === 'function') {
-            try {
-              htmlContent = window[fnName]();
-              console.log('📄 Direct function loaded:', fnName);
-            } catch(e) {
-              console.warn(fnName + ' error:', e.message);
-            }
-          }
-        }
-        
-        // If we have content, show it
-        if (htmlContent && typeof htmlContent === 'string' && htmlContent.trim().length > 50 && !htmlContent.includes('error-state')) {
-          modalBody.innerHTML = htmlContent;
-          console.log('✅ Loaded:', name);
-          
-          // Initialize the project
-          setTimeout(function() {
-            try {
-              // Try initializeProject from project.js
-              if (typeof initializeProject === 'function') {
-                initializeProject(name);
-                console.log('✅ Initialized via project.js');
-              }
-              
-              // Also try direct init function
-              var initFn = 'init' + name.split('-').map(function(w) {
-                return w.charAt(0).toUpperCase() + w.slice(1);
-              }).join('');
-              if (typeof window[initFn] === 'function') {
-                window[initFn]();
-                console.log('✅ Initialized via direct function:', initFn);
-              }
-            } catch(e) {
-              console.warn('Init error:', e.message);
-            }
-          }, 100);
-          
-          // Setup focus trap
-          if (removeTrap) removeTrap();
-          removeTrap = trapFocus(modal);
-          
-          setTimeout(function () {
-            if (modalClose && modalClose.focus) {
-              modalClose.focus({ preventScroll: true });
-            }
-          }, 100);
-          
-          return;
-        }
-        
-        // If nothing worked, show coming soon
-        modalBody.innerHTML = `
-          <div style="text-align:center;padding:60px 20px;">
-            <div style="font-size:4rem;margin-bottom:1rem;">🚀</div>
-            <h2 style="color:#e2e8f0;margin-bottom:0.5rem;">${name.replace(/-/g, ' ').toUpperCase()}</h2>
-            <p style="color:#94a3b8;margin-bottom:1.5rem;">This project is coming soon!</p>
-            <button onclick="closeProjectSafe()" 
-                    style="background:#a78bfa;color:white;border:none;padding:12px 32px;border-radius:50px;cursor:pointer;font-size:1rem;">
-              Close
-            </button>
-          </div>
-        `;
-        console.warn('⚠️ Project not available:', name);
-        
-      } catch (error) {
-        console.error('Error loading project:', error);
-        modalBody.innerHTML = `
-          <div style="text-align:center;padding:60px 20px;">
-            <div style="font-size:3rem;margin-bottom:20px;">⚠️</div>
-            <h3 style="color:#e2e8f0;">Error Loading Project</h3>
-            <p style="color:#94a3b8;">${error.message || 'Unknown error'}</p>
-            <button onclick="closeProjectSafe()" 
-                    style="margin-top:20px;background:#a78bfa;color:white;border:none;padding:12px 32px;border-radius:50px;cursor:pointer;">
-              Close
-            </button>
-          </div>
-        `;
+        htmlContent = getProjectHTML(name);
+        console.log('📄 Got HTML for:', name);
+      } catch(e) {
+        console.warn('getProjectHTML error:', e.message);
       }
-    }, 300);
-
+    }
+    
+    if (htmlContent && htmlContent.trim().length > 50 && !htmlContent.includes('error-state')) {
+      
+      // 👇 SET THE HTML
+      modalBody.innerHTML = htmlContent;
+      
+      // 👇 ADD INFO BUTTON
+      console.log('🔧 Adding info button for:', name);
+      
+      setTimeout(function() {
+        try {
+          const h2 = modalBody.querySelector('h2');
+          
+          if (h2) {
+            console.log('✅ Found h2:', h2.textContent);
+            
+            if (!h2.querySelector('.info-btn-simple')) {
+              const btn = document.createElement('button');
+              btn.className = 'info-btn-simple';
+              btn.innerHTML = ' ℹ️';
+              btn.style.cssText = `
+                background: transparent;
+                border: none;
+                color: #a78bfa;
+                font-size: 1.2rem;
+                cursor: pointer;
+                padding: 0 5px;
+                margin-left: 8px;
+              `;
+              
+              btn.onclick = function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                let instructions = null;
+                if (typeof projectInstructions !== 'undefined' && projectInstructions) {
+                  instructions = projectInstructions[name];
+                }
+                
+                if (instructions && instructions.title && instructions.steps) {
+                  let msg = instructions.title + '\n\n';
+                  instructions.steps.forEach(function(step, i) {
+                    msg += (i + 1) + '. ' + step + '\n';
+                  });
+                  alert(msg);
+                } else {
+                  alert('No instructions available for: ' + name);
+                }
+              };
+              
+              h2.appendChild(btn);
+              console.log('✅ Info button added!');
+            }
+          } else {
+            console.warn('⚠️ No h2 found');
+          }
+        } catch (error) {
+          console.error('❌ Error:', error);
+        }
+      }, 500);
+      
+      // Initialize the project
+      setTimeout(function() {
+        try {
+          if (typeof initializeProject === 'function') {
+            initializeProject(name);
+          }
+        } catch(e) {
+          console.warn('Init error:', e.message);
+        }
+      }, 600);
+      
+    } else {
+      // Show coming soon
+      modalBody.innerHTML = `
+        <div style="text-align:center;padding:60px 20px;">
+          <div style="font-size:4rem;margin-bottom:1rem;">🚀</div>
+          <h2 style="color:#e2e8f0;margin-bottom:0.5rem;">${name.replace(/-/g, ' ').toUpperCase()}</h2>
+          <p style="color:#94a3b8;margin-bottom:1.5rem;">Coming soon!</p>
+          <button onclick="document.getElementById('projectModal').style.display='none';document.body.style.overflow='';" 
+                  style="background:#a78bfa;color:white;border:none;padding:12px 32px;border-radius:50px;cursor:pointer;font-size:1rem;">
+            Close
+          </button>
+        </div>
+      `;
+    }
+  } catch(error) {
+    console.error('Error loading project:', error);
+    modalBody.innerHTML = `
+      <div style="text-align:center;padding:60px 20px;">
+        <div style="font-size:3rem;margin-bottom:20px;">⚠️</div>
+        <h3 style="color:#e2e8f0;">Error Loading Project</h3>
+        <p style="color:#94a3b8;">${error.message || 'Unknown error'}</p>
+        <button onclick="document.getElementById('projectModal').style.display='none';document.body.style.overflow='';" 
+                style="margin-top:20px;background:#a78bfa;color:white;border:none;padding:12px 32px;border-radius:50px;cursor:pointer;">
+          Close
+        </button>
+      </div>
+    `;
+  }
+}, 300);
     // Setup focus trap
     if (removeTrap) removeTrap();
     removeTrap = trapFocus(modal);
