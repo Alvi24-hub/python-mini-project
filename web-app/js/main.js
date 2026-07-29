@@ -163,10 +163,17 @@ var recentSearches = JSON.parse(localStorage.getItem("recentSearches") || "[]");
 // INFO MODAL FUNCTIONS - FIXED
 // ============================================
 
+// main.js ~line 107 — reorder like this:
 function showInfoModal(title, steps) {
   var overlay = document.getElementById("infoModalOverlay");
   var titleEl = document.getElementById("infoModalTitle");
   var listEl = document.getElementById("infoModalList");
+  var closeBtn = document.getElementById("infoModalClose");
+  var gotItBtn = document.getElementById("infoModalGotIt");
+
+  // ✅ Declare BEFORE closeModal so they're available inside it
+  var closeBtn = document.getElementById("infoModalClose");
+  var gotItBtn = document.getElementById("infoModalGotIt");
 
   if (!overlay || !titleEl || !listEl) return;
 
@@ -191,37 +198,39 @@ function showInfoModal(title, steps) {
     overlay.style.opacity = '0';
     overlay.classList.remove("active");
     overlay.setAttribute('aria-hidden', 'true');
+    // Clean up event listeners
+    if (closeBtn) closeBtn.removeEventListener("click", closeModal);
+    if (gotItBtn) gotItBtn.removeEventListener("click", closeModal);
+    overlay.removeEventListener("click", overlayClick);
     document.removeEventListener("keydown", escapeHandler);
+  }
+
+  function overlayClick(e) {
+    if (e.target === overlay) closeModal();
   }
 
   function escapeHandler(e) {
     if (e.key === 'Escape') closeModal();
   }
 
-  // Setup close buttons
-  var closeBtn = document.getElementById("infoModalClose");
-  var gotItBtn = document.getElementById("infoModalGotIt");
-
+  // Add event listeners
   if (closeBtn) {
-    // Remove old listeners by cloning
-    const newClose = closeBtn.cloneNode(true);
-    closeBtn.parentNode.replaceChild(newClose, closeBtn);
-    newClose.addEventListener("click", function (e) {
+    closeBtn.onclick = function(e) {
       e.preventDefault();
+      e.stopPropagation();
       closeModal();
-    });
+    };
   }
 
   if (gotItBtn) {
-    const newGotIt = gotItBtn.cloneNode(true);
-    gotItBtn.parentNode.replaceChild(newGotIt, gotItBtn);
-    newGotIt.addEventListener("click", function (e) {
+    gotItBtn.onclick = function(e) {
       e.preventDefault();
+      e.stopPropagation();
       closeModal();
-    });
+    };
   }
 
-  overlay.onclick = function (e) {
+  overlay.onclick = function(e) {
     if (e.target === overlay) closeModal();
   };
 
@@ -235,6 +244,7 @@ function showConfirm(message, onConfirm, onCancel) {
   var okBtn = document.getElementById('confirmOkBtn');
   var cancelBtn = document.getElementById('confirmCancelBtn');
   if (!overlay || !msg || !okBtn || !cancelBtn) {
+    // fallback to window.confirm
     var ok = window.confirm(message);
     if (ok && typeof onConfirm === 'function') onConfirm();
     else if (!ok && typeof onCancel === 'function') onCancel();
@@ -265,6 +275,7 @@ function showConfirm(message, onConfirm, onCancel) {
 
 window.showConfirm = showConfirm;
 
+
 /* ── DOMContentLoaded ──────────────────────────────────────── */
 document.addEventListener("DOMContentLoaded", function () {
   // Initially hide sidebar - will be shown by IntersectionObserver
@@ -273,7 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (pageCategory && window.innerWidth >= 1100) {
     document.body.classList.add("sidebar-active");
   }
-
+  
   function repairLegacyHomeLayoutNow() {
     var legacyHost = document.querySelector(".hero-code-snippets")
       ? document.querySelector(".hero-code-snippets").closest(".hero-section")
@@ -430,7 +441,7 @@ if (themeModePicker && themeModeMenu) {
       toggle.addEventListener("click", function () {
         if (typeof window.audioController.toggleMute === "function") {
           window.audioController.toggleMute();
-          updateSoundIcons();
+          updateSoundIcons(); // Instantly updates every sound button on the screen
           if (
             !window.audioController.isMuted &&
             typeof window.audioController.play === "function"
@@ -441,6 +452,7 @@ if (themeModePicker && themeModeMenu) {
       });
     });
   } else {
+    // Fallback if audioController isn't loaded
     soundToggles.forEach(function (toggle) {
       toggle.addEventListener("click", function () {
         var icon = this.querySelector("i");
@@ -679,8 +691,7 @@ if (themeModePicker && themeModeMenu) {
     currentCategory = category;
     syncSidebarTabs(category);
     syncStickyTabs(category);
-
-    // Sync stats cards highlight
+    
     var statsCards = document.querySelectorAll(".stats-card");
     statsCards.forEach(function (card) {
       card.classList.toggle("active", card.getAttribute("data-filter") === category);
@@ -729,34 +740,37 @@ if (themeModePicker && themeModeMenu) {
     });
   }
 
-function showProjectsSection() {
-  playgroundActive = false;
-  if (playgroundSection) playgroundSection.style.display = "none";
-  if (projectsSection) projectsSection.style.display = "";
-  // ✅ Keep sidebar visible
-  document.body.classList.add("sidebar-active");
-  if (window.playgroundAPI && typeof window.playgroundAPI.deactivate === "function") {
-    window.playgroundAPI.deactivate();
-  }
-}
-
-function showPlaygroundSection() {
-  playgroundActive = true;
-  syncStickyTabs("playground");
-  var statsCards = document.querySelectorAll(".stats-card");
-  statsCards.forEach(function (card) {
-    card.classList.remove("active");
-  });
-  if (projectsSection) projectsSection.style.display = "none";
-  if (playgroundSection) {
-    playgroundSection.style.display = "";
-    // ✅ Keep sidebar visible
-    document.body.classList.add("sidebar-active");
-    if (window.playgroundAPI && typeof window.playgroundAPI.activate === "function") {
-      window.playgroundAPI.activate();
+  /* ── Playground Section Toggle ────────────────────────────── */
+  function showProjectsSection() {
+    playgroundActive = false;
+    if (playgroundSection) playgroundSection.style.display = "none";
+    if (projectsSection) projectsSection.style.display = "";
+    if (
+      window.playgroundAPI &&
+      typeof window.playgroundAPI.deactivate === "function"
+    ) {
+      window.playgroundAPI.deactivate();
     }
   }
-}
+
+  function showPlaygroundSection() {
+    playgroundActive = true;
+    syncStickyTabs("playground");
+    var statsCards = document.querySelectorAll(".stats-card");
+    statsCards.forEach(function (card) {
+      card.classList.remove("active");
+    });
+    if (projectsSection) projectsSection.style.display = "none";
+    if (playgroundSection) {
+      playgroundSection.style.display = "";
+      if (
+        window.playgroundAPI &&
+        typeof window.playgroundAPI.activate === "function"
+      ) {
+        window.playgroundAPI.activate();
+      }
+    }
+  }
 
   /* ── Sidebar Tabs ─────────────────────────────────────────── */
   sidebarTabs.forEach(function (st) {
@@ -776,6 +790,7 @@ function showPlaygroundSection() {
 
       var pageCategory = document.body.getAttribute("data-page");
       if (pageCategory) {
+        // We are on a subpage (games, math, or utilities)
         if (category === pageCategory) {
           var grid = document.getElementById("projectsGrid");
           if (grid) grid.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -803,6 +818,7 @@ function showPlaygroundSection() {
         return;
       }
 
+      // If we're already on the matching subpage, just scroll to the grid
       if (pageCategory && category === pageCategory) {
         var grid = document.getElementById("projectsGrid");
         if (grid) grid.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -867,51 +883,51 @@ function showPlaygroundSection() {
    Wire Hero Category Navigation
 ========================================================== */
 
-  const heroNavButtons = document.querySelectorAll(".hero-nav-btn");
+const heroNavButtons = document.querySelectorAll(".hero-nav-btn");
 
-  heroNavButtons.forEach(function (button) {
+heroNavButtons.forEach(function (button) {
 
     button.addEventListener("click", function () {
 
-      const category = button.dataset.category;
+        const category = button.dataset.category;
 
-      heroNavButtons.forEach(function (btn) {
-        btn.classList.remove("active");
-      });
+        heroNavButtons.forEach(function (btn) {
+            btn.classList.remove("active");
+        });
 
-      button.classList.add("active");
+        button.classList.add("active");
 
-      syncSidebarTabs(category);
-      syncStickyTabs(category);
+        syncSidebarTabs(category);
+        syncStickyTabs(category);
 
-      if (category === "playground") {
+        if (category === "playground") {
 
-        showPlaygroundSection();
+            showPlaygroundSection();
 
-        if (playgroundSection) {
-          playgroundSection.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
+            if (playgroundSection) {
+                playgroundSection.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                });
+            }
+
+        } else {
+
+            showProjectsSection();
+            applyCategoryFilter(category);
+
+            if (projectsSection) {
+                projectsSection.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                });
+            }
+
         }
-
-      } else {
-
-        showProjectsSection();
-        applyCategoryFilter(category);
-
-        if (projectsSection) {
-          projectsSection.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-        }
-
-      }
 
     });
 
-  });
+});
 
 
   /* ── Stats Cards ──────────────────────────────────────────── */
@@ -919,8 +935,7 @@ function showPlaygroundSection() {
   statsCards.forEach(function (card) {
     card.addEventListener("click", function () {
       var category = card.getAttribute("data-filter");
-
-      // Update active highlight class on stats cards
+      
       statsCards.forEach(function (c) {
         c.classList.toggle("active", c === card);
       });
@@ -954,6 +969,7 @@ function showPlaygroundSection() {
       { threshold: 0, rootMargin: "-80px 0px 0px 0px" }
     );
     heroObserver.observe(heroSection);
+
   }
 
   /* ── Random Project ───────────────────────────────────────── */
@@ -992,47 +1008,56 @@ function showPlaygroundSection() {
   if (stickyTabs.length) syncStickyTabs("all");
 
   /* ── Sidebar Active Scroll Observer ───────────────────────── */
-  if (!pageCategory && projectsSection) {
+if (!pageCategory && projectsSection) {
     console.log('Setting up sidebar observer');
  
-    // ✅ KEEP SIDEBAR VISIBLE ALWAYS
-// ✅ FIXED: Keep sidebar visible in playground
-const checkAndToggleSidebar = () => {
-  // REMOVE the playground hiding logic entirely
-  // Just handle mobile vs desktop
-  
-  if (window.innerWidth <= 768) {
-    // On mobile, sidebar is controlled by hamburger menu
-    return;
-  }
-  
-  // On desktop, always show sidebar when projects section is visible
-  const rect = projectsSection.getBoundingClientRect();
-  const heroSection = document.querySelector('.hero-section');
-  const heroBottom = heroSection ? heroSection.getBoundingClientRect().bottom : 0;
-  const showSidebar = rect.top < window.innerHeight && window.scrollY > heroBottom - 100;
-  
-  document.body.classList.toggle("sidebar-active", showSidebar);
-  
-  const fixedThemeToggle = document.getElementById("fixed-theme-toggle");
-  if (fixedThemeToggle) {
-    fixedThemeToggle.style.display = showSidebar ? "none" : "block";
-  }
-};
+    const checkAndToggleSidebar = () => {
+      // FIX #1364: Never show sidebar if Playground is active
+      if (playgroundActive) {
+        document.body.classList.remove("sidebar-active");
+        const fixedThemeToggle = document.getElementById("fixed-theme-toggle");
+        if (fixedThemeToggle) {
+          fixedThemeToggle.style.display = "block";
+        }
+        return;
+      }
+
+      if (window.innerWidth <= 768) {
+        return;
+      }
+      const rect = projectsSection.getBoundingClientRect();
+      // Show sidebar when projects section is in view AND we're scrolled past hero
+      const heroSection = document.querySelector('.hero-section');
+      const heroBottom = heroSection ? heroSection.getBoundingClientRect().bottom : 0;
+      const showSidebar = rect.top < window.innerHeight && window.scrollY > heroBottom - 100;
+ 
+      document.body.classList.toggle("sidebar-active", showSidebar);
+      console.log('Sidebar active:', showSidebar, 'scrollY:', window.scrollY, 'playgroundActive:', playgroundActive);
+
+      // Hide fixed-theme-toggle if sidebar is active
+      const fixedThemeToggle = document.getElementById("fixed-theme-toggle");
+      if (fixedThemeToggle) {
+        if (showSidebar) {
+          fixedThemeToggle.style.display = "none";
+        }
+        else {
+          fixedThemeToggle.style.display = "block";
+        }
+      }
+    };
  
     window.addEventListener('scroll', checkAndToggleSidebar);
     checkAndToggleSidebar();
-  }
+}
 
   /* ═══════════════════════════════════════════════════════════════
-    SEARCH - FIXED & IMPROVED
-    ═══════════════════════════════════════════════════════════════ */
+     SEARCH - FIXED & IMPROVED
+     ═══════════════════════════════════════════════════════════════ */
 
   // Get search elements
   var searchInput = document.querySelector(".sidebar-dock #searchInput");
   var searchDropdown = document.getElementById("searchDropdown");
   var searchLoader = document.getElementById("searchLoader");
-  // Select all list containers and sections for dropdown and sidebar variants (including fallbacks)
   var recentSearchesLists = document.querySelectorAll("#recentSearchesList, #dropdownRecentSearchesList, #sidebarRecentSearchesList");
   var recentSearchesSections = document.querySelectorAll("#recentSearchesSection, #dropdownRecentSearchesSection, #sidebarRecentSearchesSection");
   var dropdownRecentSearchesSection = document.getElementById("dropdownRecentSearchesSection") || document.getElementById("recentSearchesSection");
@@ -1041,34 +1066,24 @@ const checkAndToggleSidebar = () => {
   var tipsSection = document.getElementById("tipsSection");
   var noResultsMessage = document.getElementById("noResultsMessage");
 
-  // Get the top navigation search input (to remove later)
+  // Hide top navigation search
   var navSearchInput = document.getElementById("navSearchInput");
-
-  // ============================================================
-  // HIDE THE TOP NAVIGATION SEARCH BAR (as requested)
-  // ============================================================
   if (navSearchInput) {
-    // Hide the entire parent container
     var navSearchContainer = navSearchInput.closest('.nav-search-container');
     if (navSearchContainer) {
       navSearchContainer.style.display = 'none';
     } else {
-      // If no container, just hide the input
       navSearchInput.style.display = 'none';
     }
   }
 
-  // ============================================================
-  // IMPROVED SEARCH FUNCTION
-  // ============================================================
-
   function getMatchingProjects(query) {
     if (!query || query.trim() === '') return [];
-
+    
     var q = query.toLowerCase().trim();
     var matches = [];
     var favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-
+    
     projectCards.forEach(function (card) {
       var title = (card.querySelector("h3") || {}).textContent || "";
       var desc = (card.querySelector("p") || {}).textContent || "";
@@ -1076,17 +1091,15 @@ const checkAndToggleSidebar = () => {
       var category = card.getAttribute("data-category") || "";
       var projectName = card.getAttribute("data-project") || "";
       var isFav = favorites.includes(projectName);
-
-      // Check if current category filter applies
-      var catMatch = currentCategory === "all" ||
-        (currentCategory === "favorites" && isFav) ||
-        (currentCategory !== "favorites" && category === currentCategory);
-
-      // Search in title, description, tags
+      
+      var catMatch = currentCategory === "all" || 
+                     (currentCategory === "favorites" && isFav) ||
+                     (currentCategory !== "favorites" && category === currentCategory);
+      
       var searchMatch = title.toLowerCase().includes(q) ||
-        desc.toLowerCase().includes(q) ||
-        tags.includes(q);
-
+                       desc.toLowerCase().includes(q) ||
+                       tags.includes(q);
+      
       if (catMatch && searchMatch) {
         matches.push({
           card: card,
@@ -1099,11 +1112,10 @@ const checkAndToggleSidebar = () => {
         });
       }
     });
-
+    
     return matches;
   }
 
-  // Improved highlight function
   function highlightText(container, text, query) {
     var safe = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     var parts = text.split(new RegExp("(" + safe + ")", "gi"));
@@ -1123,80 +1135,78 @@ const checkAndToggleSidebar = () => {
     });
   }
 
-  function closeDropdown() {
-    if (searchDropdown) {
-      searchDropdown.classList.remove("active");
-      searchDropdown.style.display = 'none';
-    }
+function closeDropdown() {
+  if (searchDropdown) {
+    searchDropdown.classList.remove("active");
+    searchDropdown.style.display = 'none';
   }
+}
 
-  function openDropdown() {
-    if (searchDropdown) {
-      searchDropdown.classList.add("active");
-      searchDropdown.style.display = 'block';
-    }
+function openDropdown() {
+  if (searchDropdown) {
+    searchDropdown.classList.add("active");
+    searchDropdown.style.display = 'block';
   }
+}
 
-  // Render recent searches
   function renderRecentSearches() {
     if (noResultsMessage) noResultsMessage.style.display = "none";
     if (recentSearchesSections.length === 0) return;
 
-    recentSearchesLists.forEach(function (listContainer) {
-      if (!listContainer) return;
-      listContainer.innerHTML = "";
+  recentSearchesLists.forEach(function (listContainer) {
+    if (!listContainer) return;
+    listContainer.innerHTML = "";
 
-      if (recentSearches.length === 0) {
-        var emptyEl = document.createElement("p");
-        emptyEl.className = "recent-searches-empty";
-        emptyEl.textContent = "No recent searches yet. Start exploring projects!";
-        listContainer.appendChild(emptyEl);
-      } else {
-        recentSearches.slice(0, 5).forEach(function (search) {
-          var chip = document.createElement("div");
-          chip.className = "recent-search-chip";
-          chip.setAttribute("role", "listitem");
+    if (recentSearches.length === 0) {
+      var emptyEl = document.createElement("p");
+      emptyEl.className = "recent-searches-empty";
+      emptyEl.textContent = "No recent searches yet. Start exploring projects!";
+      listContainer.appendChild(emptyEl);
+    } else {
+      recentSearches.slice(0, 5).forEach(function (search) {
+        var chip = document.createElement("div");
+        chip.className = "recent-search-chip";
+        chip.setAttribute("role", "listitem");
 
-          var labelBtn = document.createElement("button");
-          labelBtn.type = "button";
-          labelBtn.className = "recent-search-chip-label";
-          labelBtn.setAttribute("aria-label", "Search for " + search);
-          var labelSpan = document.createElement("span");
-          labelSpan.textContent = search;
-          labelBtn.appendChild(labelSpan);
+        var labelBtn = document.createElement("button");
+        labelBtn.type = "button";
+        labelBtn.className = "recent-search-chip-label";
+        labelBtn.setAttribute("aria-label", "Search for " + search);
+        var labelSpan = document.createElement("span");
+        labelSpan.textContent = search;
+        labelBtn.appendChild(labelSpan);
 
-          var removeBtn = document.createElement("button");
-          removeBtn.type = "button";
-          removeBtn.className = "recent-search-chip-remove";
-          removeBtn.setAttribute("aria-label", "Remove search");
-          removeBtn.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
+        var removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "recent-search-chip-remove";
+        removeBtn.setAttribute("aria-label", "Remove search");
+        removeBtn.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
 
-          chip.append(labelBtn, removeBtn);
+        chip.append(labelBtn, removeBtn);
 
-          labelBtn.addEventListener("click", function () {
-            if (searchInput) {
-              searchInput.value = search;
-              currentSearchQuery = search;
-              performSearch(true);
-              closeDropdown();
-            }
-          });
-
-          removeBtn.addEventListener("click", function (e) {
-            e.stopPropagation();
-            recentSearches = recentSearches.filter(function (s) {
-              return s !== search;
-            });
-            localStorage.setItem("recentSearches", JSON.stringify(recentSearches));
-            renderRecentSearches();
-          });
-
-          listContainer.appendChild(chip);
+        labelBtn.addEventListener("click", function () {
+          if (searchInput) {
+            searchInput.value = search;
+            currentSearchQuery = search;
+            performSearch(true);
+            closeDropdown();
+          }
         });
-      }
-    });
 
-    // Clear recent buttons
+        removeBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          recentSearches = recentSearches.filter(function (s) {
+            return s !== search;
+          });
+          localStorage.setItem("recentSearches", JSON.stringify(recentSearches));
+          renderRecentSearches();
+        });
+
+        listContainer.appendChild(chip);
+      });
+    }
+  });
+
     var clearRecentBtns = document.querySelectorAll("#clearRecentBtn, #clearRecentDropdownBtn, #clearRecentSidebarBtn");
     clearRecentBtns.forEach(function (btn) {
       if (!btn) return;
@@ -1212,50 +1222,48 @@ const checkAndToggleSidebar = () => {
             renderRecentSearches();
             closeDropdown();
           },
-          function () { }
+          function () {}
         );
       };
     });
 
-    recentSearchesSections.forEach(function (section) {
-      if (!section) return;
-      section.style.display = "block";
-    });
-    if (resultsSection) resultsSection.style.display = "none";
-    if (tipsSection) tipsSection.style.display = "block";
-  }
+  recentSearchesSections.forEach(function (section) {
+    if (!section) return;
+    section.style.display = "block";
+  });
+  if (resultsSection) resultsSection.style.display = "none";
+  if (tipsSection) tipsSection.style.display = "block";
+}
 
-  // Render search suggestions
   function renderSuggestions(query) {
     if (searchLoader) searchLoader.style.display = "none";
-
+    
     if (!query || query.trim() === '') {
       renderRecentSearches();
       return;
     }
 
-    var matches = getMatchingProjects(query);
+  var matches = getMatchingProjects(query);
 
-    if (matches.length === 0) {
-      if (resultsSection) resultsSection.style.display = "none";
-      if (dropdownRecentSearchesSection) dropdownRecentSearchesSection.style.display = "none";
-      if (tipsSection) tipsSection.style.display = "block";
-      if (noResultsMessage) {
-        noResultsMessage.style.display = "block";
-        noResultsMessage.textContent = 'No projects found for "' + query + '"';
-      }
-      return;
+  if (matches.length === 0) {
+    if (resultsSection) resultsSection.style.display = "none";
+    if (dropdownRecentSearchesSection) dropdownRecentSearchesSection.style.display = "none";
+    if (tipsSection) tipsSection.style.display = "block";
+    if (noResultsMessage) {
+      noResultsMessage.style.display = "block";
+      noResultsMessage.textContent = 'No projects found for "' + query + '"';
     }
+    return;
+  }
 
-    if (noResultsMessage) noResultsMessage.style.display = "none";
+  if (noResultsMessage) noResultsMessage.style.display = "none";
 
-    if (resultsList) {
-      resultsList.innerHTML = "";
-      matches.slice(0, 8).forEach(function (project, index) {
-        var item = document.createElement("div");
-        item.className = "dropdown-item" + (index === selectedSuggestionIndex ? " selected" : "");
+  if (resultsList) {
+    resultsList.innerHTML = "";
+    matches.slice(0, 8).forEach(function (project, index) {
+      var item = document.createElement("div");
+      item.className = "dropdown-item" + (index === selectedSuggestionIndex ? " selected" : "");
 
-        // Icon
         var iconBox = document.createElement("div");
         iconBox.className = "dropdown-item-icon";
         var banner = project.card.querySelector(".card-banner");
@@ -1267,12 +1275,10 @@ const checkAndToggleSidebar = () => {
           iconBox.appendChild(img);
         }
 
-        // Title with highlight
         var titleBox = document.createElement("div");
         titleBox.className = "dropdown-item-text";
         highlightText(titleBox, project.title, query);
-
-        // Description (optional)
+        
         if (project.desc) {
           var descSpan = document.createElement("span");
           descSpan.className = "dropdown-item-desc";
@@ -1281,39 +1287,38 @@ const checkAndToggleSidebar = () => {
           titleBox.appendChild(descSpan);
         }
 
-        // Category tag
         var tag = document.createElement("span");
         tag.className = "dropdown-item-tag";
         tag.textContent = project.category || "project";
 
         item.append(iconBox, titleBox, tag);
-
+        
         item.addEventListener("click", function () {
           selectSuggestion(project.title);
         });
-
+        
         item.addEventListener("mouseenter", function () {
           selectedSuggestionIndex = index;
           updateSuggestionHighlight();
         });
-
+        
         resultsList.appendChild(item);
       });
     }
 
-    if (resultsSection) resultsSection.style.display = "block";
-    if (dropdownRecentSearchesSection) dropdownRecentSearchesSection.style.display = "none";
-    if (tipsSection) tipsSection.style.display = "none";
-    selectedSuggestionIndex = -1;
-  }
+  if (resultsSection) resultsSection.style.display = "block";
+  if (dropdownRecentSearchesSection) dropdownRecentSearchesSection.style.display = "none";
+  if (tipsSection) tipsSection.style.display = "none";
+  selectedSuggestionIndex = -1;
+}
 
-  function updateSuggestionHighlight() {
-    if (!resultsList) return;
-    var items = resultsList.querySelectorAll(".dropdown-item");
-    items.forEach(function (item, i) {
-      item.classList.toggle("selected", i === selectedSuggestionIndex);
-    });
-  }
+function updateSuggestionHighlight() {
+  if (!resultsList) return;
+  var items = resultsList.querySelectorAll(".dropdown-item");
+  items.forEach(function (item, i) {
+    item.classList.toggle("selected", i === selectedSuggestionIndex);
+  });
+}
 
   function selectSuggestion(title) {
     if (!searchInput) return;
@@ -1329,22 +1334,16 @@ const checkAndToggleSidebar = () => {
     }
   }
 
-  // ============================================================
-  // MAIN SEARCH EXECUTION - FIXED
-  // ============================================================
-
   function performSearch(commit) {
     var query = currentSearchQuery ? currentSearchQuery.trim().toLowerCase() : '';
-
-    // If no query, reset to show all projects
+    
     if (!query) {
       applyCategoryFilter(currentCategory);
       if (emptyStateHint) {
         emptyStateHint.textContent = "Try adjusting your search or category filter.";
       }
-      // Update project count
-      var visibleCount = projectCards.filter(function (c) {
-        return c.style.display !== "none";
+      var visibleCount = projectCards.filter(function(c) { 
+        return c.style.display !== "none"; 
       }).length;
       if (projectCountBadge) {
         projectCountBadge.textContent = String(visibleCount) + " projects";
@@ -1352,14 +1351,12 @@ const checkAndToggleSidebar = () => {
       return;
     }
 
-    // If searching, set category to "all" to search everything
     if (currentCategory !== "all") {
       currentCategory = "all";
       syncSidebarTabs("all");
       syncStickyTabs("all");
     }
 
-    // Save to recent searches
     if (commit) {
       recentSearches = recentSearches.filter(function (s) {
         return s.toLowerCase() !== query;
@@ -1371,7 +1368,7 @@ const checkAndToggleSidebar = () => {
 
     var visibleCount = 0;
     var favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-
+    
     projectCards.forEach(function (card) {
       var category = card.getAttribute("data-category") || "";
       var title = (card.querySelector("h3") || {}).textContent || "";
@@ -1380,15 +1377,11 @@ const checkAndToggleSidebar = () => {
       var projectName = card.getAttribute("data-project") || "";
       var isFav = favorites.includes(projectName);
 
-      // Match: search in title, description, or tags
       var searchMatch = title.toLowerCase().includes(query) ||
-        desc.toLowerCase().includes(query) ||
-        tags.includes(query);
+                       desc.toLowerCase().includes(query) ||
+                       tags.includes(query);
 
-      // Category match (always true since we set to "all" above)
-      var catMatch = true;
-
-      if (catMatch && searchMatch) {
+      if (searchMatch) {
         card.style.display = "";
         visibleCount++;
       } else {
@@ -1396,32 +1389,26 @@ const checkAndToggleSidebar = () => {
       }
     });
 
-    // Show/hide empty state
     if (emptyState) {
       emptyState.style.display = visibleCount === 0 ? "block" : "none";
       if (visibleCount === 0 && emptyStateHint) {
         emptyStateHint.textContent = 'No projects match "' + query + '". Try a different keyword.';
       }
     }
-
+    
     if (projectCountBadge) {
       projectCountBadge.textContent = String(visibleCount) + " projects";
     }
   }
 
-  // ============================================================
-  // WIRE SEARCH INPUTS
-  // ============================================================
+  var searchInputs = [searchInput].filter(Boolean);
 
-  var searchInputs = [searchInput].filter(Boolean); // Only sidebar search now
-
-  if (searchInputs.length) {
-    var debouncedSearch = debounce(function (query) {
-      renderSuggestions(query);
-    }, 200);
+if (searchInputs.length) {
+  var debouncedSearch = debounce(function (query) {
+    renderSuggestions(query);
+  }, 200);
 
     searchInputs.forEach(function (input) {
-      // Input event - real-time search
       input.addEventListener("input", function (e) {
         var rawValue = e.target.value;
         var query = rawValue.trim();
@@ -1430,20 +1417,15 @@ const checkAndToggleSidebar = () => {
         if (clearSearchBtn) {
           clearSearchBtn.hidden = query === "";
         }
-
-        // Show loader
+        
         if (searchLoader) {
           searchLoader.style.display = query ? "block" : "none";
         }
-
-        // Update suggestions
+        
         debouncedSearch(query);
-
-        // Perform search (without saving to recent)
         performSearch(false);
       });
 
-      // Focus event - show dropdown
       input.addEventListener("focus", function () {
         if (searchDropdown) {
           openDropdown();
@@ -1455,35 +1437,34 @@ const checkAndToggleSidebar = () => {
         }
       });
 
-      // Blur event - close dropdown after delay
       input.addEventListener("blur", function () {
-        setTimeout(function () {
+        setTimeout(function() {
           if (searchDropdown && !searchDropdown.matches(':hover')) {
             closeDropdown();
           }
         }, 200);
       });
 
-      // Keyboard navigation
       input.addEventListener("keydown", function (e) {
         if (e.key === "Escape") {
           input.value = "";
           currentSearchQuery = "";
+
           if (clearSearchBtn) {
-            clearSearchBtn.hidden = true;
+              clearSearchBtn.hidden = true;
           }
+
           performSearch(false);
           closeDropdown();
           input.blur();
         }
-
+        
         if (e.key === "Enter") {
           e.preventDefault();
           var query = currentSearchQuery ? currentSearchQuery.trim() : '';
           if (query) {
             performSearch(true);
             closeDropdown();
-            // Scroll to results
             if (projectsSection) {
               projectsSection.scrollIntoView({
                 behavior: prefersReducedMotion() ? "auto" : "smooth",
@@ -1492,13 +1473,12 @@ const checkAndToggleSidebar = () => {
             }
           }
         }
-
-        // Arrow keys for navigation
+        
         if (e.key === "ArrowDown" || e.key === "ArrowUp") {
           e.preventDefault();
           var items = resultsList ? resultsList.querySelectorAll(".dropdown-item") : [];
           if (items.length === 0) return;
-
+          
           var currentIndex = selectedSuggestionIndex;
           if (e.key === "ArrowDown") {
             selectedSuggestionIndex = Math.min(currentIndex + 1, items.length - 1);
@@ -1506,8 +1486,7 @@ const checkAndToggleSidebar = () => {
             selectedSuggestionIndex = Math.max(currentIndex - 1, -1);
           }
           updateSuggestionHighlight();
-
-          // Scroll into view
+          
           if (selectedSuggestionIndex >= 0 && items[selectedSuggestionIndex]) {
             items[selectedSuggestionIndex].scrollIntoView({ block: 'nearest' });
           }
@@ -1515,40 +1494,31 @@ const checkAndToggleSidebar = () => {
       });
     });
 
-    if (clearSearchBtn) {
+  if (clearSearchBtn) {
       clearSearchBtn.addEventListener("click", function () {
-
         searchInputs.forEach(function (input) {
           input.value = "";
         });
-
         currentSearchQuery = "";
-
         performSearch(false);
-
         closeDropdown();
-
         clearSearchBtn.hidden = true;
-
         if (searchInput) {
           searchInput.focus();
         }
       });
-    }
   }
+}
 
-  // Close dropdown when clicking outside
   document.addEventListener("click", function (e) {
-    if (searchDropdown && searchInput &&
-      !searchDropdown.contains(e.target) &&
-      e.target !== searchInput) {
+    if (searchDropdown && searchInput && 
+        !searchDropdown.contains(e.target) && 
+        e.target !== searchInput) {
       closeDropdown();
     }
   });
 
-  // Keyboard shortcuts
   document.addEventListener("keydown", function (e) {
-    // Ctrl+K or Cmd+K to focus search
     if ((e.ctrlKey || e.metaKey) && e.key === "k") {
       e.preventDefault();
       if (searchInput) {
@@ -1558,7 +1528,6 @@ const checkAndToggleSidebar = () => {
       return;
     }
 
-    // "/" to focus search (if not in input)
     if (e.key === "/" && !isTypingInField(e.target)) {
       e.preventDefault();
       if (searchInput) {
@@ -1568,21 +1537,18 @@ const checkAndToggleSidebar = () => {
     }
   });
 
-  // Helper function to check if typing in field
   function isTypingInField(target) {
     if (!target) return false;
     var tag = target.tagName ? target.tagName.toLowerCase() : "";
     return tag === "input" || tag === "textarea" || tag === "select" || target.isContentEditable;
   }
 
-  // Initial render
   renderRecentSearches();
-
   console.log("🔍 Search functionality initialized successfully!");
 
   /* ═══════════════════════════════════════════════════════════════
-      MODAL - COMPLETE FIX
-      ═══════════════════════════════════════════════════════════════ */
+      MODAL
+    ═══════════════════════════════════════════════════════════════ */
   function getFocusableElements(root) {
     var sel =
       'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -1616,120 +1582,46 @@ const checkAndToggleSidebar = () => {
   }
 
   // ============================================
-  // FIX: openProjectSafe - COMPLETE WORKING VERSION
-  // ============================================
-  function openProjectSafe(name, trigger) {
-    if (!modal || !modalBody) return;
+// FIX: openProjectSafe - SIMPLIFIED WORKING VERSION
+// ============================================
+function openProjectSafe(name, trigger) {
+  if (!modal || !modalBody) return;
 
-    console.log('📂 Opening project:', name);
-
-    // Close any existing modal
-    if (modal.classList.contains("active")) {
-      modal.classList.remove("active");
-      modal.setAttribute("aria-hidden", "true");
-      document.body.style.paddingRight = "";
-      document.body.style.overflow = "";
-      setMainInert(false);
-      if (removeTrap) {
-        removeTrap();
-        removeTrap = null;
-      }
-      modalBody.innerHTML = "";
-      if (modalTitle) modalTitle.textContent = "";
+  // Close any existing modal
+  if (modal.classList.contains("active")) {
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.paddingRight = "";
+    document.body.style.overflow = "";
+    setMainInert(false);
+    if (removeTrap) {
+      removeTrap();
+      removeTrap = null;
     }
+    modalBody.innerHTML = "";
+    if (modalTitle) modalTitle.textContent = "";
+  }
 
-    lastFocusedElement = trigger || document.activeElement;
+  lastFocusedElement = trigger || document.activeElement;
 
-    // Set modal active
-    modal.classList.add("active");
-    modal.setAttribute("aria-hidden", "false");
-    var scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    document.body.style.paddingRight = scrollbarWidth + "px";
-    document.body.style.overflow = "hidden";
-    setMainInert(true);
+  // Set modal active
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  var scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+  document.body.style.paddingRight = scrollbarWidth + "px";
+  document.body.style.overflow = "hidden";
+  setMainInert(true);
 
-    // Load new content
-    safeRun(function () {
-      var html = '';
-      if (typeof getProjectHTML === "function") {
-        html = getProjectHTML(name);
-      }
+    // Show loading
+    modalBody.innerHTML = `
+      <div style="text-align:center;padding:60px 20px;">
+        <div style="font-size:3rem;margin-bottom:20px;">⏳</div>
+        <h3 style="color:#e2e8f0;">Loading ${name.replace(/-/g, ' ')}...</h3>
+        <div style="margin:20px auto;width:40px;height:40px;border:4px solid #1e293b;border-top-color:#a78bfa;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+      </div>
+    `;
 
-      if (!html || html === 'undefined') {
-        html = '<div style="padding:1rem;color:var(--text-secondary)">Project content unavailable.</div>';
-      }
-
-      modalBody.innerHTML = html;
-
-      if (typeof initializeProject === "function") {
-        initializeProject(name);
-      }
-      // setupModalInfoButton(name);
-
-      // Inject info button - FIXED for Tic Tac Toe and all projects
-      var projectContent = modalBody.querySelector(".project-content");
-      if (projectContent) {
-        // First, check if there's already an info button (to avoid duplicates)
-        if (projectContent.querySelector(".inline-info-btn")) {
-          // Info button already exists, skip injection
-          console.log('ℹ️ Info button already exists for', name);
-        } else {
-          var firstHeading = projectContent.querySelector("h2, h3, .pet-title");
-
-          // Special case for Tic Tac Toe - look for the heading inside project-content
-          if (!firstHeading) {
-            firstHeading = projectContent.querySelector('[style*="display: flex"] h2');
-          }
-
-          if (!firstHeading) {
-            // Look for any element that might be a title
-            firstHeading = projectContent.querySelector('[class*="title"], [class*="header"] h2');
-          }
-
-          if (firstHeading && !projectContent.querySelector(".inline-info-btn")) {
-            var infoBtn = document.createElement("button");
-            infoBtn.className = "inline-info-btn";
-            infoBtn.innerHTML = "ⓘ";
-            infoBtn.setAttribute("aria-label", "How to use this project");
-            infoBtn.style.marginLeft = "12px";
-            infoBtn.style.background = "none";
-            infoBtn.style.border = "none";
-            infoBtn.style.fontSize = "1.3rem";
-            infoBtn.style.cursor = "pointer";
-            infoBtn.style.color = "var(--accent)";
-            infoBtn.style.verticalAlign = "middle";
-
-            infoBtn.addEventListener("click", function (e) {
-              e.stopPropagation();
-              if (typeof getProjectInstructions === "function") {
-                var info = getProjectInstructions(name);
-                if (info && typeof showInfoModal === "function") {
-                  showInfoModal(info.title, info.steps);
-                }
-              }
-            });
-
-            if (firstHeading.style.display !== "inline-block") {
-              firstHeading.style.display = "inline-block";
-            }
-            firstHeading.appendChild(infoBtn);
-          }
-        }
-      }
-    });
-
-    // Setup focus trap
-    if (removeTrap) removeTrap();
-    removeTrap = trapFocus(modal);
-
-    // Focus the close button for accessibility
-    setTimeout(function () {
-      if (modalClose && modalClose.focus) {
-        modalClose.focus({ preventScroll: true });
-      }
-    }, 100);
-
-    // Update recently viewed
+    // Add to recently viewed
     if (name) {
       var recent = JSON.parse(localStorage.getItem("recentProjects") || "[]");
       recent = recent.filter(function (r) { return r !== name; });
@@ -1738,14 +1630,135 @@ const checkAndToggleSidebar = () => {
       localStorage.setItem("recentProjects", JSON.stringify(recent));
       if (typeof window.updateRecentlyViewed === "function") window.updateRecentlyViewed();
     }
-  }
 
+    // Load the project
+setTimeout(function() {
+  try {
+    var htmlContent = null;
+    
+    if (typeof getProjectHTML === 'function') {
+      try {
+        htmlContent = getProjectHTML(name);
+        console.log('📄 Got HTML for:', name);
+      } catch(e) {
+        console.warn('getProjectHTML error:', e.message);
+      }
+    }
+    
+    if (htmlContent && htmlContent.trim().length > 50 && !htmlContent.includes('error-state')) {
+      
+      // 👇 SET THE HTML
+      modalBody.innerHTML = htmlContent;
+      
+      // 👇 ADD INFO BUTTON
+      console.log('🔧 Adding info button for:', name);
+      
+      setTimeout(function() {
+        try {
+          const h2 = modalBody.querySelector('h2');
+          
+          if (h2) {
+            console.log('✅ Found h2:', h2.textContent);
+            
+            if (!h2.querySelector('.info-btn-simple')) {
+              const btn = document.createElement('button');
+              btn.className = 'info-btn-simple';
+              btn.innerHTML = ' ℹ️';
+              btn.style.cssText = `
+                background: transparent;
+                border: none;
+                color: #a78bfa;
+                font-size: 1.2rem;
+                cursor: pointer;
+                padding: 0 5px;
+                margin-left: 8px;
+              `;
+              
+              btn.onclick = function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                let instructions = null;
+                if (typeof projectInstructions !== 'undefined' && projectInstructions) {
+                  instructions = projectInstructions[name];
+                }
+                
+                if (instructions && instructions.title && instructions.steps) {
+                  let msg = instructions.title + '\n\n';
+                  instructions.steps.forEach(function(step, i) {
+                    msg += (i + 1) + '. ' + step + '\n';
+                  });
+                  alert(msg);
+                } else {
+                  alert('No instructions available for: ' + name);
+                }
+              };
+              
+              h2.appendChild(btn);
+              console.log('✅ Info button added!');
+            }
+          } else {
+            console.warn('⚠️ No h2 found');
+          }
+        } catch (error) {
+          console.error('❌ Error:', error);
+        }
+      }, 500);
+      
+      // Initialize the project
+      setTimeout(function() {
+        try {
+          if (typeof initializeProject === 'function') {
+            initializeProject(name);
+          }
+        } catch(e) {
+          console.warn('Init error:', e.message);
+        }
+      }, 600);
+      
+    } else {
+      // Show coming soon
+      modalBody.innerHTML = `
+        <div style="text-align:center;padding:60px 20px;">
+          <div style="font-size:4rem;margin-bottom:1rem;">🚀</div>
+          <h2 style="color:#e2e8f0;margin-bottom:0.5rem;">${name.replace(/-/g, ' ').toUpperCase()}</h2>
+          <p style="color:#94a3b8;margin-bottom:1.5rem;">Coming soon!</p>
+          <button onclick="document.getElementById('projectModal').style.display='none';document.body.style.overflow='';" 
+                  style="background:#a78bfa;color:white;border:none;padding:12px 32px;border-radius:50px;cursor:pointer;font-size:1rem;">
+            Close
+          </button>
+        </div>
+      `;
+    }
+  } catch(error) {
+    console.error('Error loading project:', error);
+    modalBody.innerHTML = `
+      <div style="text-align:center;padding:60px 20px;">
+        <div style="font-size:3rem;margin-bottom:20px;">⚠️</div>
+        <h3 style="color:#e2e8f0;">Error Loading Project</h3>
+        <p style="color:#94a3b8;">${error.message || 'Unknown error'}</p>
+        <button onclick="document.getElementById('projectModal').style.display='none';document.body.style.overflow='';" 
+                style="margin-top:20px;background:#a78bfa;color:white;border:none;padding:12px 32px;border-radius:50px;cursor:pointer;">
+          Close
+        </button>
+      </div>
+    `;
+  }
+}, 300);
+    // Setup focus trap
+    if (removeTrap) removeTrap();
+    removeTrap = trapFocus(modal);
+
+    setTimeout(function () {
+      if (modalClose && modalClose.focus) {
+        modalClose.focus({ preventScroll: true });
+      }
+    }, 100);
+  }
 
   function closeProjectSafe() {
     if (!modal) return;
     if (!modal.classList.contains("active")) return;
-
-    console.log('❌ Closing modal');
 
     modal.classList.remove("active");
     modal.setAttribute("aria-hidden", "true");
@@ -1757,8 +1770,7 @@ const checkAndToggleSidebar = () => {
       removeTrap();
       removeTrap = null;
     }
-
-    renderRecentSearches();
+    
     // Clear content
     if (modalBody) {
       modalBody.innerHTML = "";
@@ -1780,18 +1792,18 @@ const checkAndToggleSidebar = () => {
   if (modalClose) {
     modalClose.onclick = closeProjectSafe;
   }
-
+  
   if (modal) {
-    modal.onclick = function (e) {
+    modal.addEventListener("click", function (e) {
       if (e.target === modal) closeProjectSafe();
-    };
+    });
   }
-
+  
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") closeProjectSafe();
   });
 
-  // Expose functions globally
+  /* ── Expose for inline use ────────────────────────────────── */
   window.openProjectSafe = openProjectSafe;
   window.closeProjectSafe = closeProjectSafe;
   window.setMainInert = setMainInert;
@@ -1799,14 +1811,12 @@ const checkAndToggleSidebar = () => {
   function updateFavoritesCountBadge() {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     const count = favorites.length;
-
-    // Update sidebar badge
+    
     const badge = document.getElementById("favoritesCountBadge");
     if (badge) {
       badge.textContent = "(" + count + ")";
     }
-
-    // Update stats dashboard
+    
     const heroFavoriteCount = document.getElementById("heroFavoriteCount");
     if (heroFavoriteCount) {
       heroFavoriteCount.textContent = count;
@@ -1819,24 +1829,17 @@ const checkAndToggleSidebar = () => {
        ═══════════════════════════════════════════════════════════════ */
   function wireProjectCard(card) {
     var name = card.getAttribute("data-project");
-    const difficulty =
-      card.getAttribute("data-difficulty");
+    const difficulty = card.getAttribute("data-difficulty");
 
     if (difficulty) {
-
       const badge = document.createElement("span");
-
-      badge.className =
-        "difficulty-badge " +
-        difficulty.toLowerCase();
-
+      badge.className = "difficulty-badge " + difficulty.toLowerCase();
       badge.textContent = difficulty;
-
       card.appendChild(badge);
-
     }
 
-    // Favorite Button
+    /* ── Favorite Button ──────────────────────────────────── */
+    // Remove any existing favorite button first to avoid duplicates
     var existingFavBtn = card.querySelector(".btn-favorite");
     if (existingFavBtn) {
       existingFavBtn.remove();
@@ -1859,16 +1862,18 @@ const checkAndToggleSidebar = () => {
       var idx = favs.indexOf(name);
 
       if (idx === -1) {
+        // Add to favorites
         favs.push(name);
         favBtn.classList.add("active");
         favBtn.innerHTML = '<i class="fas fa-star"></i>';
-        favBtn.style.color = "#f5a623";
+        favBtn.style.color = "#f5a623"; // Yellow
         console.log("⭐ Added " + name + " to favorites");
       } else {
+        // Remove from favorites
         favs.splice(idx, 1);
         favBtn.classList.remove("active");
         favBtn.innerHTML = '<i class="far fa-star"></i>';
-        favBtn.style.color = "";
+        favBtn.style.color = ""; // Reset to default
         console.log("☆ Removed " + name + " from favorites");
         if (currentCategory === "favorites") {
           card.style.display = "none";
@@ -1876,8 +1881,7 @@ const checkAndToggleSidebar = () => {
       }
 
       localStorage.setItem("favorites", JSON.stringify(favs));
-
-      // Update badge and counts
+      
       if (typeof updateSidebarCategoryCounts === 'function') {
         updateSidebarCategoryCounts();
       }
@@ -1889,7 +1893,7 @@ const checkAndToggleSidebar = () => {
     var cardActions = card.querySelector(".card-actions");
     if (cardActions) cardActions.appendChild(favBtn);
 
-    // Share Button
+    /* ── Share Button ─────────────────────────────────────── */
     var shareBtn = document.createElement("button");
     shareBtn.className = "btn-share";
     shareBtn.setAttribute("aria-label", "Share " + name);
@@ -1916,7 +1920,7 @@ const checkAndToggleSidebar = () => {
 
     if (cardActions) cardActions.appendChild(shareBtn);
 
-    // Play Button
+    /* ── Play Button ──────────────────────────────────────── */
     var playBtns = card.querySelectorAll(".btn-play");
     playBtns.forEach(function (play) {
       play.setAttribute("aria-label", "Open " + name);
@@ -1926,7 +1930,7 @@ const checkAndToggleSidebar = () => {
       });
     });
 
-    // Card Click
+    /* ── Card Click ───────────────────────────────────────── */
     card.addEventListener("click", function (e) {
       if (
         e.target.closest(".btn-play") ||
@@ -1937,7 +1941,7 @@ const checkAndToggleSidebar = () => {
       openProjectSafe(name, card);
     });
 
-    // Card Mouse Tracking
+    /* ── Card Mouse Tracking for Border Glow ──────────────── */
     if (!prefersReducedMotion()) {
       card.addEventListener("mousemove", function (e) {
         var rect = card.getBoundingClientRect();
@@ -1959,22 +1963,20 @@ const checkAndToggleSidebar = () => {
     var section = document.getElementById("recentlyViewedSection");
     if (!grid || !section) return;
     var recent = JSON.parse(localStorage.getItem("recentProjects") || "[]");
-    const historyBadge =
-      document.getElementById("historyCountBadge");
+    const historyBadge = document.getElementById("historyCountBadge");
 
-    if (historyBadge) {
-      historyBadge.textContent = `(${recent.length})`;
+    if(historyBadge){
+      historyBadge.textContent=`(${recent.length})`;
     }
     const heroViewedCount = document.getElementById("heroViewedCount");
     if (heroViewedCount) {
       heroViewedCount.textContent = String(recent.length);
     }
-    console.log("[DEBUG] recentProjects array:", recent);
-    if (recent.length === 0) {
+    console.log("[DEBUG] recentProjects array:", recent); if (recent.length === 0) {
       section.style.display = "none";
       return;
     }
-    section.style.display = "block";
+    section.style.display = "block"; // ensure visible
     grid.innerHTML = "";
     recent.forEach(function (name) {
       var originalCard = projectCards.find(function (c) { return c.getAttribute("data-project") === name; });
@@ -1986,13 +1988,14 @@ const checkAndToggleSidebar = () => {
         if (existingShare) existingShare.remove();
         clonedCard.style.display = "";
         wireProjectCard(clonedCard);
-        grid.appendChild(clonedCard);
-        console.log("[DEBUG] added recently viewed card", name);
+        grid.appendChild(clonedCard); console.log("[DEBUG] added recently viewed card", name);
       }
     });
   };
 
-  // Toast function
+  // window.updateRecentlyViewed(); // moved to after DOMContentLoaded
+
+  /* ── Toast ─────────────────────────────────────────────────── */
   function showToast(message) {
     var existing = document.getElementById("shareToast");
     if (existing) existing.remove();
@@ -2012,7 +2015,7 @@ const checkAndToggleSidebar = () => {
     }, 2500);
   }
 
-  // URL params auto-open
+  /* ── URL params auto-open ──────────────────────────────────── */
   (function () {
     var params = new URLSearchParams(window.location.search);
     var projectParam = params.get("project");
@@ -2038,7 +2041,7 @@ const checkAndToggleSidebar = () => {
     }
   })();
 
-  // Reveal on Scroll
+  /* ── Reveal on Scroll (general) ────────────────────────────── */
   var revealItems = document.querySelectorAll(".reveal-on-scroll");
   if (revealItems.length && !prefersReducedMotion()) {
     var revealObserver = new IntersectionObserver(
@@ -2063,6 +2066,7 @@ const checkAndToggleSidebar = () => {
   document.querySelectorAll(".footer-cat-link").forEach(function (link) {
     link.addEventListener("click", function (e) {
       e.preventDefault();
+
       var cat = link.getAttribute("data-cat");
       var tab = document.querySelector(
         '.sidebar-tab[data-category="' + cat + '"]'
@@ -2071,18 +2075,24 @@ const checkAndToggleSidebar = () => {
     });
   });
 
-  // Scroll Progress Bar
+  /* ── Scroll Progress Bar ───────────────────────────── */
+
   var progressBar = document.getElementById("scrollProgressBar");
+
   if (progressBar) {
     let ticking = false;
 
     function updateScrollProgress() {
       var scrollTop = window.scrollY || document.documentElement.scrollTop;
+
       var docHeight =
         document.documentElement.scrollHeight -
         document.documentElement.clientHeight;
+
       var progress = docHeight ? (scrollTop / docHeight) * 100 : 0;
+
       progressBar.style.width = progress + "%";
+
       ticking = false;
     }
 
@@ -2094,33 +2104,53 @@ const checkAndToggleSidebar = () => {
     });
   }
 
-  // URL parameters auto-open logic (duplicate removed)
+  // URL parameters auto-open logic
+  (function () {
+    const params = new URLSearchParams(window.location.search);
+    const projectParam = params.get("project");
+    if (projectParam) {
+      const match = projectCards.find(
+        (c) => c.getAttribute("data-project") === projectParam
+      );
+      if (match) {
+        setTimeout(() => {
+          openProjectSafe(projectParam, match);
+          match.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 300);
+      }
+    }
+    const catParam = params.get("category");
+    const valid = [
+      "all",
+      "games",
+      "math",
+      "utilities",
+      "playground",
+      "favorites",
+    ];
+    if (catParam && valid.includes(catParam)) {
+      const tab = document.querySelector(`[data-category="${catParam}"]`);
+      if (tab) {
+        setTimeout(() => tab.click(), 100);
+      }
+    }
+  })();
+
   // Initial card filtering state update
   updateProjectVisibility(currentCategory, currentSearchQuery);
   window.updateRecentlyViewed();
 
-  const clearBtn =
-    document.getElementById("clearHistoryBtn");
-
+  const clearBtn = document.getElementById("clearHistoryBtn");
   if (clearBtn) {
-
     clearBtn.addEventListener("click", () => {
-
       showConfirm(
         "Clear recently viewed projects?",
         () => {
-
           localStorage.removeItem("recentProjects");
-
           window.updateRecentlyViewed();
-
           showToast("History Cleared");
-
         }
-
       );
-
     });
-
   }
 });

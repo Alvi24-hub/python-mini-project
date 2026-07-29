@@ -22,7 +22,6 @@ function getProjectHTML(projectName) {
     "morse-code": getMorseCodeHTML(),
     "tower-of-hanoi": getTowerOfHanoiHTML(),
     nqueens: getNQueensHTML(),
-    "queens-logic-puzzle": getQueensLogicPuzzleHTML(),
     "matrix-calculator": () => getMatrixCalculatorHTML(),
     "sudoku-game": getSudokuGameHTML(),
     "unit-converter": getUnitConverterHTML(),
@@ -38,10 +37,9 @@ function getProjectHTML(projectName) {
     "tsp-visualizer": getTspVisualizerHTML(),
     'minesweeper': getMinesweeperHTML()
   };
-  return projects[projectName];
-}
-  
 
+  return projects[projectName] || "<h2>Project Coming Soon!</h2>";
+}
 
 function toPascalCase(str) {
   if (str === "2048-game") return "2048Game";
@@ -56,11 +54,6 @@ function toPascalCase(str) {
 function initializeProject(projectName) {
   if (projectName === "number-sliding-puzzle") {
     initNumberSlidingPuzzle();
-    return;
-  }
-
-  if (projectName === "queens-logic-puzzle") {
-    initQueensLogicPuzzle();
     return;
   }
 
@@ -169,7 +162,7 @@ const projectInstructions = {
     title: "💣 How to Play Minesweeper",
     steps: [
       "Left-click on a cell to reveal it",
-      "If you reveal a mine — game over! ",
+      "If you reveal a mine — game over! 💥",
       "Right-click (or long press on mobile) to place/remove a 🚩 flag on suspected mines",
       "Numbers on revealed cells show how many mines are adjacent",
       "Use logic to deduce where mines are hidden",
@@ -217,17 +210,6 @@ const projectInstructions = {
       "Click or press spacebar to make the bird fly",
       "Avoid hitting the pipes",
       "Try to get the highest score",
-    ],
-  },
-  "queens-logic-puzzle": {
-    title: "👑 How to Play Queens Logic Puzzle",
-    steps: [
-      "Place one queen in each row, column, and colored region",
-      "Queens cannot touch horizontally, vertically, or diagonally",
-      "Click a cell to place a queen, click again to remove it",
-      "Use Hint to highlight a valid placement",
-      "Use Undo to revert your last move",
-      "Solve the puzzle to win!",
     ],
   },
   "dice-rolling": {
@@ -663,4 +645,3 @@ function initNQueens() {
     solutionCountEl.textContent = "0";
   });
 }
-
