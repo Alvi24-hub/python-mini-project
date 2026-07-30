@@ -42,6 +42,7 @@ class RegistryValidator:
         self.registry_path = Path(registry_path)
         self.errors = []
         self.warnings = []
+        self.unregistered_projects = []
         self.projects = []
         self.validation_status = "PENDING"
 
@@ -156,8 +157,25 @@ class RegistryValidator:
 
             if not project_file.exists():
                 self.errors.append(
-                    f"Missing project file: {path}"
+                    f"Registered project not found in repository: {path}"
                 )
+
+    def validate_repository_consistency(self):
+        """Validate repository and registry consistency."""
+
+        registry_dirs = self.get_registry_project_directories()
+        discovered_dirs = self.discover_repository_projects()
+
+        unregistered_projects = sorted(
+            discovered_dirs - registry_dirs
+        )
+
+        self.unregistered_projects = unregistered_projects
+
+        for project in self.unregistered_projects:
+            self.errors.append(
+                f"Project exists in repository but is missing from registry: {project}"
+            )
 
     def validate_keywords(self):
         """Validate keywords field."""
@@ -177,6 +195,76 @@ class RegistryValidator:
                     f"{project['name']} has no keywords."
                 )
 
+    def get_scan_directories(self):
+        """Return repository roots that contain projects."""
+
+        root = self.registry_path.parent
+
+        return {
+            directory.name
+            for directory in root.iterdir()
+            if directory.is_dir()
+            and directory.name != "__pycache__"
+            and not directory.name.startswith(".")
+        }
+
+    def get_registry_project_directories(self):
+        """Return project directories defined in the registry."""
+
+        registry_dirs = set()
+
+        for project in self.projects:
+            path = project.get("path")
+
+            if not path:
+                continue
+
+            registry_dirs.add(
+                Path(path).parent.as_posix()
+            )
+
+        return registry_dirs
+
+    def discover_repository_projects(self):
+        """Discover project directories from the repository."""
+
+        root = self.registry_path.parent
+        discovered_projects = set()
+
+        for directory_name in self.get_scan_directories():
+            directory = root / directory_name
+
+            if (
+                not directory.exists()
+                or not directory.is_dir()
+            ):
+                continue
+
+            # Standalone project (e.g. expression_parser)
+            if directory_name == "expression_parser":
+                if any(directory.glob("*.py")):
+                    discovered_projects.add(
+                        directory.relative_to(root).as_posix()
+                    )
+                continue
+
+            # Category containing project folders
+            for project_dir in directory.iterdir():
+                if not project_dir.is_dir():
+                    continue
+
+                if project_dir.name == "__pycache__":
+                    continue
+
+                # Only consider directories that contain at least one
+                # top-level Python file.
+                if any(project_dir.glob("*.py")):
+                    discovered_projects.add(
+                        project_dir.relative_to(root).as_posix()
+                    )
+
+        return discovered_projects
+
     def validate(self):
         """Run all validation checks."""
 
@@ -191,6 +279,7 @@ class RegistryValidator:
         self.validate_duplicate_names()
         self.validate_duplicate_paths()
         self.validate_project_paths()
+        self.validate_repository_consistency()
         self.validate_keywords()
 
         if self.errors:
@@ -207,6 +296,9 @@ class RegistryValidator:
                         "errors": len(self.errors),
                         "warnings": len(self.warnings),
                         "status": self.validation_status.lower(),
+                        "repository_consistency": {
+                            "unregistered_projects": self.unregistered_projects,
+                        },
                     },
                     indent=2,
                 )
@@ -238,8 +330,22 @@ class RegistryValidator:
 
         if self.errors:
             print("\nErrors:")
+
             for error in self.errors:
+                if error.startswith(
+                    "Project exists in repository but is missing from registry:"
+                ):
+                    continue
+
                 print(f"  - {error}")
+
+        if self.unregistered_projects:
+            print("\nRepository Consistency:")
+
+            print("\n  Unregistered projects:")
+
+            for project in self.unregistered_projects:
+                print(f"    - {project}")
 
         if self.warnings:
             print("\nWarnings:")

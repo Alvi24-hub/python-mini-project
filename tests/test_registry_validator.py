@@ -188,7 +188,11 @@ def test_missing_project_file(tmp_path):
     validator = RegistryValidator(registry)
     validator.validate()
 
-    assert any("missing project file" in e.lower() for e in validator.errors)
+    assert any(
+        "registered project not found in repository"
+        in e.lower()
+        for e in validator.errors
+    )
 
 def test_invalid_json(tmp_path):
     registry = tmp_path / "projects_registry.json"
@@ -300,7 +304,79 @@ def test_json_report(tmp_path, capsys):
 
     output = json.loads(captured.out)
 
+    assert "repository_consistency" in output
+
+    assert output["repository_consistency"] == {
+        "unregistered_projects": []
+    }
+
     assert output["projects"] == 1
     assert output["errors"] == 0
     assert output["warnings"] == 0
     assert output["status"] == "passed"
+
+
+def test_unregistered_repository_project(tmp_path):
+    """Repository project should be reported if missing from registry."""
+
+    utilities = tmp_path / "utilities"
+    utilities.mkdir()
+
+    project = utilities / "DemoProject"
+    project.mkdir()
+
+    (project / "DemoProject.py").write_text(
+        "print('hello')",
+        encoding="utf-8",
+    )
+
+    registry = write_registry(tmp_path, [])
+
+    validator = RegistryValidator(registry)
+
+    validator.validate()
+
+    assert "utilities/DemoProject" in validator.unregistered_projects
+
+    assert any(
+        "missing from registry" in error.lower()
+        for error in validator.errors
+    )
+
+
+def test_repository_consistency_passes(tmp_path):
+    """Registry and repository should be fully synchronized."""
+
+    utilities = tmp_path / "utilities"
+    utilities.mkdir()
+
+    project = utilities / "DemoProject"
+    project.mkdir()
+
+    (project / "DemoProject.py").write_text(
+        "print('hello')",
+        encoding="utf-8",
+    )
+
+    registry = write_registry(
+        tmp_path,
+        [
+            {
+                "name": "Demo",
+                "emoji": "🔥",
+                "category": "utilities",
+                "difficulty": "beginner",
+                "description": "Demo project",
+                "keywords": ["demo"],
+                "path": "utilities/DemoProject/DemoProject.py",
+            }
+        ],
+    )
+
+    validator = RegistryValidator(registry)
+
+    validator.validate()
+
+    assert validator.unregistered_projects == []
+
+
