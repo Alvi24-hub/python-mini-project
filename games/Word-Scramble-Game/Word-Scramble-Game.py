@@ -351,7 +351,7 @@ def main():
                 ]
                 
                 if available_words:
-                    valid_words.append((category, available_words)
+                    valid_words.append((category, available_words))
                            
             if not valid_words:
                     used_words.clear()
