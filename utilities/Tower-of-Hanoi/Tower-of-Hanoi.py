@@ -46,7 +46,14 @@ def main():
     def start_game():
         nonlocal towers, moves, num_disks
 
-        num_disks = int(disk_entry.get())
+        try:
+            num_disks = int(disk_entry.get())
+        except ValueError:
+            feedback_label.config(text="Please enter a valid number of disks.", fg="red")
+            return
+        if num_disks < 1:
+            feedback_label.config(text="Number of disks must be at least 1.", fg="red")
+            return
 
         towers = {
             "A": list(range(num_disks, 0, -1)),
