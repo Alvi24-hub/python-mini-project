@@ -1,10 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Read the Privacy Policy of py.mini(). Learn how we protect user privacy, minimize data tracking, and store state natively in local storage.">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://pyodide-cdn2.iodide.io; base-uri 'self'; form-action 'self'">
+    <meta http-equiv="Content-Security-Policy"
+    content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
+    font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:;
+    img-src 'self' data:;
+    connect-src 'self' https://pyodide-cdn2.iodide.io;
+    base-uri 'self';
+    form-action 'self';
+    ">
     
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://steam-bell-92.github.io/python-mini-project/privacy-policy.html">
@@ -41,138 +52,207 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
-        /* ==========================================================================
-        COLOR TOKENS & ROOT STYLES
-           ========================================================================== */
         :root {
-            --bg-main: #050505;       
-            --bg-card: #0d0d0d;       
+            --bg-main: radial-gradient(circle at top left,
+            rgba(242, 166, 90, 0.12),
+            transparent 28%),
+            radial-gradient(circle at top right,
+            rgba(159, 221, 181, 0.1),
+            transparent 24%),
+            linear-gradient(180deg, #161211 0%, #0f0c0b 100%) ;
+            --bg-card: #1e1a18;
+            --bg-header: rgba(28, 28, 28, .65);
             --text-primary: #ffffff;
-            --text-muted: #9ca3af;    
-            --accent-green: #4ade80;  
-            --accent-orange: #f59e0b; 
-            --accent-cyan: #00cecb;    /* Specific Cyan tint from the target image */
-            --border-color: #1f2937;  
-            --header-bg: #050505;
-            --btn-bg: #0d0d0d;
-            --btn-border: #1a1a1a;
+            --text-muted: #8fa0b7;
+            --accent-green: #4ade80; 
+            --accent-dim: rgba(34, 197, 94, .12);
+            --border: rgba(255, 255, 255, 0.06);
+            --code-bg: #0d1b2a;
         }
 
-        /* ==========================================================================
-        DYNAMIC LIGHT THEME STATE
-           ========================================================================== */
-        html[data-theme="light"], body.light-mode {
-            --bg-main: #f8fafc;       
-            --bg-card: #ffffff;       
-            --text-primary: #0f172a;  
-            --text-muted: #475569;    
-            --border-color: #e2e8f0;  
-            --accent-green: #16a34a;  
-            --accent-orange: #d97706;
-            --accent-cyan: #008482;
-            --header-bg: #ffffff;
-            --btn-bg: #ffffff;
-            --btn-border: #e2e8f0;
+        html[data-theme="light"] {
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-header: #ffffff;
+            --text-primary: #0f172a;
+            --text-muted: #475569;
+            --accent-green: #4ade80;
+            --accent-dim: rgba(22, 163, 74, .1);
+            --border: #e2e8f0;
+            --code-bg: #f1f5f9;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
         }
 
         body {
-            background-color: var(--bg-main);
+            background: var(--bg-main);
             color: var(--text-primary);
             font-family: 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
             line-height: 1.7;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background .3s, color .3s
         }
 
-        .logo-py { color: var(--accent-orange); } 
-        .logo-mini { color: var(--text-primary); }
-        .logo-parens { color: var(--accent-green); }
+        [data-theme="light"] body {
+            background:
+                radial-gradient(circle at top left,
+                rgba(255, 219, 174, 0.44),
+                transparent 30%),
+                radial-gradient(circle at top right,
+                rgba(192, 245, 224, 0.46),
+                transparent 24%),
+                linear-gradient(180deg, #fffdf8 0%, #f8f5ee 45%, #f5efe5 100%);
+            }
 
-        .controls-row {
+
+        /* Header */
+        .policy-header {
+            background: var(--bg-header);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: background .3s, border-color .3s
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            height: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem
+        }
+
+        .logo-wrap {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 4px;
+            text-decoration: none;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700
         }
 
-        .theme-toggle-btn {
-            width: 48px;
-            height: 48px;
+        .logo-py {
+            color: var(--text-muted)
+        }
+
+        .logo-mini {
+            color: var(--text-primary)
+        }
+
+        .logo-parens {
+            color: var(--accent-green)
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .btn-back,
+        .btn-theme {
+            height: 42px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.25s ease;
-            border: none;
-            background: var(--accent-green);
-            color: #050505; 
-            font-size: 1.1rem;
-        }
-
-        html[data-theme="light"] .theme-toggle-btn, body.light-mode .theme-toggle-btn {
-            color: #ffffff;
-        }
-
-        .theme-toggle-btn:hover {
-            transform: translateY(-2px) scale(1.05);
-        }
-
-        /* ==========================================================================
-        MAIN CONTENT AND NEW PILL BACK BUTTON
-           ========================================================================== */
-        .privacy-wrapper {
-            padding: 3rem 1rem 5rem 1rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .content-container {
-            max-width: 850px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        /* Exact layout and style matching reference image */
-        .back-home-pill {
-            align-self: flex-start;
-            background-color: var(--btn-bg);
-            border: 1px solid var(--btn-border);
-            color: var(--accent-cyan);
-            padding: 0.6rem 1.4rem;
-            border-radius: 50px;
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: .9rem;
+            transition: all .2s ease;
             text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            transition: all 0.2s ease-in-out;
+            border: 1px solid var(--border)
         }
 
-        .back-home-pill:hover {
-            transform: translateY(-2px);
-            border-color: var(--accent-cyan);
-            box-shadow: 0 6px 16px rgba(0, 206, 203, 0.15);
+        .btn-back {
+            padding: 0 1.1rem;
+            background: transparent;
+            color: var(--text-muted);
+            gap: .45rem
         }
 
-        .privacy-card {
+        .btn-back:hover {
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+            transform: translateY(-1px)
+        }
+
+        .btn-theme {
+            width: 42px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            /* border: grey; */
+            font-size: 1rem
+        }
+
+        .btn-theme i.fa-moon {
+        color: #8b5cf6;
+        /* Cosmic Purple */
+        filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.55));
+        }
+
+        .btn-theme i.fa-sun {
+        color: #f59e0b;
+        /* Golden Sun */
+        filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.55));
+        }
+
+        .btn-theme:hover {
+            transform: translateY(-2px) scale(1.07)
+        }
+
+        /* Hero */
+        .policy-hero {
+            text-align: center;
+            padding: 4rem 1rem 2.5rem;
+            position: relative
+        }
+
+        .policy-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            letter-spacing: -.5px;
+            margin-bottom: .75rem
+        }
+
+        /* Main */
+        .policy-main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1rem 1.25rem 5rem
+        }
+
+        /* Cards */
+        .policy-card {
             background-color: var(--bg-card);
             width: 100%;
             padding: 3.5rem;
             border-radius: 16px;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-            box-sizing: border-box;
+            transition: border-color .2s, box-shadow .2s
         }
 
-        .privacy-card h1 {
+        .policy-card h1 {
             font-family: 'Space Grotesk', sans-serif;
             font-size: 2.75rem;
             margin-top: 0;
@@ -180,25 +260,12 @@
             letter-spacing: -0.5px;
         }
 
-        .title-accent {
-            color: var(--accent-orange);
+        .policy-card:hover {
+            border-color: rgba(34, 197, 94, .3);
+            box-shadow: 0 4px 20px rgba(34, 197, 94, .07)
         }
 
-        .last-updated {
-            color: var(--accent-green);
-            font-size: 0.9rem;
-            font-family: 'IBM Plex Mono', monospace;
-            margin-bottom: 2.5rem;
-        }
-
-        .divider {
-            border: 0;
-            height: 1px;
-            background: var(--border-color);
-            margin: 2.5rem 0;
-        }
-
-        .privacy-card h2 {
+        .policy-card h2 {
             font-family: 'Space Grotesk', sans-serif;
             color: var(--text-primary);
             font-size: 1.5rem;
@@ -208,54 +275,85 @@
             padding-left: 12px;
         }
 
-        .privacy-card p, .privacy-card ul {
+        .policy-card p, .policy-card ul {
             color: var(--text-muted);
             font-size: 1.05rem;
             margin-bottom: 1.5rem;
         }
 
-        .privacy-card ul { padding-left: 1.5rem; }
-        .privacy-card li { margin-bottom: 0.5rem; }
-        .privacy-card strong { color: var(--text-primary); }
+        .policy-card ul { padding-left: 1.5rem; }
+        .policy-card li { margin-bottom: 0.5rem; }
+        .policy-card strong { color: var(--text-primary); }
 
-        /* ==========================================================================
-        FOOTER BASE
-           ========================================================================== */
-        .privacy-footer {
+        /* Footer */
+        .policy-footer {
+            background: var(--bg-header);
+            border-top: 1px solid var(--border);
             text-align: center;
-            padding: 2.5rem;
+            padding: 1.75rem 1rem;
+            font-size: .875rem;
             color: var(--text-muted);
-            font-size: 0.85rem;
-            border-top: 1px solid var(--border-color);
+            transition: background .3s, border-color .3s
         }
 
-        /* ==========================================================================
-        RESPONSIVE STRUCTURAL TWEAKS
-           ========================================================================== */
-        @media (max-width: 768px) {
-            .privacy-card { padding: 2.5rem 1.5rem; }
-            .privacy-card h1 { font-size: 2.25rem; }
-            .header-container { padding: 0 1rem; }
-            .logo-wrap { font-size: 1.6rem; }
+        .policy-footer a {
+            color: var(--accent-green);
+            text-decoration: none;
+            transition: opacity .2s
+        }
+
+        .policy-footer a:hover {
+            opacity: .75
+        }
+
+        @media(max-width:600px) {
+            .header-inner {
+                padding: 0 1rem;
+                height: 68px
+            }
+
+            .logo-wrap {
+                font-size: 1.3rem
+            }
+
+            .btn-back span {
+                display: none
+            }
         }
     </style>
 </head>
+
 <body>
-    <main class="privacy-wrapper">
-        <div class="content-container">
-            <a href="index.html" class="back-home-pill">
-                <i class="fas fa-arrow-left"></i> Back to Home
+
+    <header class="policy-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo-wrap">
+                <span class="logo-py">py</span>
+                <span class="logo-mini">.mini</span>
+                <span class="logo-parens">()</span>
             </a>
+            <div class="header-controls">
+                <a href="index.html" class="btn-back">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Home</span>
+                </a>
+                <button type="button" class="btn-theme" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas fa-sun" id="themeIcon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
 
-            <article class="privacy-card">
-                <h1>Privacy <span class="title-accent">Policy</span></h1>
-                <p class="last-updated">Last Updated: May 20, 2026</p>
-                
-                <p>At <strong>py.mini()</strong>, accessible from our web platform, protecting the privacy of our visitors is one of our primary commitments. This Privacy Policy document outlines the types of information we collect, how it is managed, and your rights regarding your data when you interact with our suite of games, math tools, and terminal applications.</p>
-                
-                <hr class="divider">
-
-                <section>
+    <div class="policy-hero">
+        <h1 class="hero-title"><i class="fas fa-shield-halved"></i> Privacy Policy</h1>
+        <p class="last-updated">Last Updated: May 20, 2026</p>                
+    </div>
+    
+    <main class="policy-main">
+        <div class="policy-card">
+            <p>At <strong>py.mini()</strong>, accessible from our web platform, protecting the privacy of our visitors is one of our primary commitments. This Privacy Policy document outlines the types of information we collect, how it is managed, and your rights regarding your data when you interact with our suite of games, math tools, and terminal applications.</p>
+            <hr class="divider">
+            <section>
                     <h2>1. Information We Collect</h2>
                     <p>Because py.mini() operates primarily as a client-side open-source application, we minimize the data we handle. However, depending on how you interact with our platform, we may process the following:</p>
                     <ul>
@@ -312,44 +410,43 @@
                     <h2>8. Contact & Governance</h2>
                     <p>If you possess unresolved queries, require explicitly deeper breakdowns of our compliance mechanisms, or wish to propose security patches, please open a public ticket or discussion query inside our official GitHub repository infrastructure.</p>
                 </section>
-            </article>
+
         </div>
     </main>
 
-    <footer class="privacy-footer">
-        <p>Made with ❤️ for Python learners everywhere &copy; 2026</p>
+    <footer class="policy-footer">
+        <p>Made with ❤️ for Python learners everywhere &nbsp;|&nbsp;
+            <a href="privacy-policy.html">
+                <i class="fas fa-shield-alt"></i> Privacy Policy
+            </a>
+        </p>
     </footer>
 
     <script>
-        const themeToggleBtn = document.getElementById('privacyThemeToggle');
+        const html = document.documentElement;
+        const themeBtn = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
-        const htmlElement = document.documentElement;
 
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            applyTheme(savedTheme);
-        }
-
-        function applyTheme(theme) {
-            if (theme === 'light') {
-                htmlElement.setAttribute('data-theme', 'light');
-                document.body.classList.add('light-mode');
-                themeIcon.className = 'fas fa-moon'; 
+        function applyTheme(t) {
+            if (t === 'light') {
+                html.setAttribute('data-theme', 'light');
+                themeIcon.className = 'fas fa-moon';
+                themeBtn.setAttribute('aria-label', 'Switch to dark mode');
             } else {
-                htmlElement.removeAttribute('data-theme');
-                document.body.classList.remove('light-mode');
-                themeIcon.className = 'fas fa-sun'; 
+                html.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-sun';
+                themeBtn.setAttribute('aria-label', 'Switch to light mode');
             }
-            localStorage.setItem('theme', theme);
+            localStorage.setItem('theme', t);
         }
 
-        themeToggleBtn.addEventListener('click', () => {
-            const currentTheme = htmlElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-            const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            applyTheme(nextTheme);
+        applyTheme(localStorage.getItem('theme') || 'dark');
+        themeBtn.addEventListener('click', () => {
+            applyTheme(html.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
         });
 
-        initTheme();
     </script>
+
 </body>
+
 </html>
