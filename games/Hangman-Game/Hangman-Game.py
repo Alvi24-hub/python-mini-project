@@ -208,6 +208,7 @@ def main():
             print(f"The word was: {word}")
             print(f"You guessed it with {max_attempts - attempts} attempts remaining!")
         else:
+            print(HANGMAN_STAGES[min(attempts, len(HANGMAN_STAGES) - 1)])
             print_game_over_banner()
             print(f"The word was: {word}")
 
