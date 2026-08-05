@@ -10,10 +10,21 @@ from utils.validation import get_int, get_yes_no
 
 def is_solvable(numbers):
     """
-    Determines if the 8-puzzle board configuration is solvable.
-    For a 3x3 puzzle, the state is solvable if and only if
-    (inversions + blank_row_from_bottom) is odd.
-    The blank tile (0) is ignored when counting inversions.
+    Determines if a 3x3 (8-puzzle) board configuration is solvable.
+
+    The classic 15-puzzle solvability rule has two cases:
+      - For an ODD-width grid (like this 3-wide board), a configuration is
+        solvable if and only if the number of inversions among the
+        non-blank tiles is EVEN. The blank tile's row has no bearing on
+        solvability in this case.
+      - The "blank row from bottom" adjustment only matters for EVEN-width
+        grids (e.g. a 4x4 15-puzzle), where solvability depends on both
+        inversion parity and which row the blank sits on.
+
+    Applying the even-width row adjustment to this odd-width (3x3) board
+    was the source of the original bug: it caused genuinely solvable
+    layouts to be rejected, and genuinely unsolvable layouts to be
+    accepted, depending purely on which row the blank happened to be in.
     """
     # Filter out the blank tile (0) for inversion counting
     tiles = [n for n in numbers if n != 0]
@@ -23,13 +34,8 @@ def is_solvable(numbers):
             if tiles[i] > tiles[j]:
                 inversions += 1
 
-    # Find blank tile row from the bottom (1=bottom, 2=middle, 3=top)
-    blank_idx = numbers.index(0)
-    blank_row_from_top = blank_idx // 3  # 0=top, 1=middle, 2=bottom
-    blank_row_from_bottom = 3 - blank_row_from_top
-
-    # Solvable if (inversions + blank_row_from_bottom) is odd
-    return (inversions + blank_row_from_bottom) % 2 == 1
+    # 3x3 board (odd width): solvable iff inversions is even.
+    return inversions % 2 == 0
 
 
 def main():
