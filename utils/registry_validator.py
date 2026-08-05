@@ -141,6 +141,42 @@ class RegistryValidator:
             else:
                 seen.add(path)
 
+    def validate_path_normalization(self):
+        """Validate that project paths follow the expected format."""
+
+        for project in self.projects:
+
+            name = project.get("name", "<unknown>")
+            path = project.get("path")
+
+            if not path:
+                continue
+
+            if "\\" in path:
+                self.errors.append(
+                    f"{name} uses Windows path separators: {path}"
+                )
+
+            if "//" in path:
+                self.errors.append(
+                    f"{name} contains duplicate path separators: {path}"
+                )
+
+            if path.startswith("./"):
+                self.errors.append(
+                    f"{name} uses a leading './' in its path: {path}"
+                )
+
+            if path.startswith("/"):
+                self.errors.append(
+                    f"{name} uses a leading '/' in its path: {path}"
+                )
+
+            if path.endswith("/"):
+                self.errors.append(
+                    f"{name} uses a trailing '/' in its path: {path}"
+                )
+
     def validate_project_paths(self):
         """Ensure project files exist."""
 
@@ -278,6 +314,7 @@ class RegistryValidator:
 
         self.validate_duplicate_names()
         self.validate_duplicate_paths()
+        self.validate_path_normalization()
         self.validate_project_paths()
         self.validate_repository_consistency()
         self.validate_keywords()

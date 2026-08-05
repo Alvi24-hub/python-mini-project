@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import pytest
 
 from utils.registry_validator import RegistryValidator
 
@@ -380,3 +381,68 @@ def test_repository_consistency_passes(tmp_path):
     assert validator.unregistered_projects == []
 
 
+def test_valid_path_normalization(tmp_path):
+    (tmp_path / "demo.py").write_text("print('hello')")
+
+    registry = write_registry(
+        tmp_path,
+        [
+            {
+                "name": "Demo",
+                "emoji": "🔥",
+                "category": "utilities",
+                "difficulty": "beginner",
+                "description": "Demo project",
+                "keywords": ["demo"],
+                "path": "demo.py",
+            }
+        ],
+    )
+
+    validator = RegistryValidator(registry)
+
+    validator.validate()
+
+    assert not any(
+        "path separator" in error.lower()
+        or "leading './'" in error.lower()
+        or "leading '/'" in error.lower()
+        or "trailing '/'" in error.lower()
+        for error in validator.errors
+    )
+
+
+@pytest.mark.parametrize(
+    ("path", "expected"),
+    [
+        ("demo\\project.py", "windows path separators"),
+        ("demo//project.py", "duplicate path separators"),
+        ("./demo.py", "leading './'"),
+        ("/demo.py", "leading '/'"),
+        ("demo.py/", "trailing '/'"),
+    ],
+)
+def test_invalid_path_normalization(tmp_path, path, expected):
+    registry = write_registry(
+        tmp_path,
+        [
+            {
+                "name": "Demo",
+                "emoji": "🔥",
+                "category": "utilities",
+                "difficulty": "beginner",
+                "description": "Demo project",
+                "keywords": ["demo"],
+                "path": path,
+            }
+        ],
+    )
+
+    validator = RegistryValidator(registry)
+
+    validator.validate()
+
+    assert any(
+        "Demo" in error and expected in error.lower()
+        for error in validator.errors
+    )
