@@ -108,58 +108,97 @@ def solve_sudoku_backtracking(
     stats: Optional[dict] = None
 ) -> bool:
     """
-    Standard Backtracking Solver with an optional visual animation mode.
+    Iterative Backtracking Solver using an explicit stack to prevent RecursionError.
     Keeps track of operations (steps) in the 'stats' dictionary.
     """
-    if stats is not None:
-        stats["steps"] += 1
+    empty_cells = []
+    for r in range(9):
+        for c in range(9):
+            if grid[r][c] == 0:
+                empty_cells.append((r, c))
 
-    empty = find_empty(grid)
-    if not empty:
+    if not empty_cells:
         return True
-    r, c = empty
 
-    for val in range(1, 10):
-        if is_valid(grid, r, c, val):
-            grid[r][c] = val
+    idx = 0
+    while idx < len(empty_cells):
+        if stats is not None:
+            stats["steps"] += 1
 
-            if visual:
-                sys.stdout.write("\033[20F") # Move cursor up 20 lines to redraw board
-                sys.stdout.flush()
-                print_board(grid, initial_grid)
-                time.sleep(delay)
+        r, c = empty_cells[idx]
+        current_val = grid[r][c]
+        found = False
 
-            if solve_sudoku_backtracking(grid, visual, initial_grid, delay, stats):
-                return True
+        for val in range(current_val + 1, 10):
+            if is_valid(grid, r, c, val):
+                grid[r][c] = val
+                found = True
+                if visual:
+                    sys.stdout.write("\033[20F")
+                    sys.stdout.flush()
+                    print_board(grid, initial_grid)
+                    time.sleep(delay)
+                break
 
+        if found:
+            idx += 1
+        else:
             grid[r][c] = 0
-
             if visual:
                 sys.stdout.write("\033[20F")
                 sys.stdout.flush()
                 print_board(grid, initial_grid)
                 time.sleep(delay)
+            idx -= 1
+            if idx < 0:
+                return False
 
-    return False
+    return True
 
 def generate_full_board(grid: List[List[int]]) -> bool:
-    """Generates a random completed Sudoku board using backtracking with shuffled digits."""
-    empty = find_empty(grid)
-    if not empty:
+    """Generates a random completed Sudoku board using iterative backtracking with candidate lists."""
+    empty_cells = []
+    for r in range(9):
+        for c in range(9):
+            if grid[r][c] == 0:
+                empty_cells.append((r, c))
+
+    if not empty_cells:
         return True
-    r, c = empty
 
-    digits = list(range(1, 10))
-    random.shuffle(digits)
+    # Pre-generate shuffled candidate order for each empty cell
+    candidates = {}
+    for cell in empty_cells:
+        digits = list(range(1, 10))
+        random.shuffle(digits)
+        candidates[cell] = digits
 
-    for val in digits:
-        if is_valid(grid, r, c, val):
-            grid[r][c] = val
-            if generate_full_board(grid):
-                return True
+    candidate_idx = [0] * len(empty_cells)
+    idx = 0
+
+    while idx < len(empty_cells):
+        r, c = empty_cells[idx]
+        cell_candidates = candidates[(r, c)]
+        found = False
+
+        while candidate_idx[idx] < len(cell_candidates):
+            val = cell_candidates[candidate_idx[idx]]
+            candidate_idx[idx] += 1
+            if is_valid(grid, r, c, val):
+                grid[r][c] = val
+                found = True
+                break
+
+        if found:
+            idx += 1
+        else:
             grid[r][c] = 0
+            candidate_idx[idx] = 0
+            idx -= 1
+            if idx < 0:
+                return False
 
-    return False
+    return True
 
 def generate_sudoku_puzzle(difficulty: str) -> Tuple[List[List[int]], List[List[int]]]:
     """

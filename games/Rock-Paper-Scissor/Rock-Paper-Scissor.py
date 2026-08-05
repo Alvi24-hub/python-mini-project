@@ -58,8 +58,48 @@ def view_leaderboard():
     print("=" * 44)
 
 
+def compute_favorite(player_history):
+    """Return (favourite_move, percentage) for the given move history, or (None, None) if empty."""
+    if not player_history:
+        return None, None
+    freq = {"rock": 0, "paper": 0, "scissors": 0}
+    for move in player_history:
+        freq[move] += 1
+    fav = max(freq, key=freq.get)
+    pct = round(freq[fav] / len(player_history) * 100)
+    return fav, pct
+
+
+def print_stats(rounds_played, user_score, computer_score, player_history):
+    """Print the current game statistics block exactly once."""
+    print("\n--- Game Statistics ---")
+    print(f"Rounds Played  : {rounds_played}")
+    print(f"Your Score     : {user_score}")
+    print(f"Computer Score : {computer_score}")
+    fav, pct = compute_favorite(player_history)
+    if fav is not None:
+        print(f"Your Favourite : {fav} ({pct}% of plays)")
+
+
+def save_result(name, user_score, computer_score, rounds_played):
+    """Append the final result line to RESULTS_FILE. Returns True on success."""
+    if not name:
+        name = "Anonymous"
+    result_string = (
+        f"Player: {name}, Final Score: {user_score} - {computer_score} "
+        f"(User-Computer), Rounds: {rounds_played}\n"
+    )
+    try:
+        with RESULTS_FILE.open("a", encoding="utf-8") as f:
+            f.write(result_string)
+        return True
+    except OSError as e:
+        print(f"Error: Could not save game results: {e}")
+        return False
+
+
 def main():
-    global ADAPT_RATE, HISTORY_CAP, MIN_ADAPTIVE, beaten_by, blended, c, choices, computer_choice, computer_score, confidence, fav, freq, i, last_move, mode, move, n, name, pct, play_again_input, player_history, predicted, remaining, result_string, rounds_played, total_trans, trans, user_choice, user_score
+    global ADAPT_RATE, HISTORY_CAP, MIN_ADAPTIVE, beaten_by, blended, c, choices, computer_choice, computer_score, confidence, fav, freq, i, last_move, mode, move, n, name, pct, play_again_input, player_history, predicted, remaining, rounds_played, total_trans, trans, user_choice, user_score
 
     print("Welcome to Rock, Paper, Scissors!")
     print("The computer will learn your patterns and adapt — good luck! 🧠")
@@ -143,11 +183,7 @@ def main():
 
         # Display AI Brain info
         if n >= MIN_ADAPTIVE and predicted is not None:
-            # Get fav
-            freq = {"rock": 0, "paper": 0, "scissors": 0}
-            for move in player_history:
-                freq[move] += 1
-            fav = max(freq, key=freq.get)
+            fav, _ = compute_favorite(player_history)
 
             print(f"\n  🧠 Computer Brain [{mode.upper()}]")
             print(f"     Your favourite move  : {fav}")
@@ -174,50 +210,18 @@ def main():
             print("Computer Wins this round! 🤖")
             computer_score += 1
 
-        # Display stats
-        print("\n--- Game Statistics ---")
-        print(f"Rounds Played  : {rounds_played}")
-        print(f"Your Score     : {user_score}")
-        print(f"Computer Score : {computer_score}")
-        if player_history:
-            freq = {"rock": 0, "paper": 0, "scissors": 0}
-            for move in player_history:
-                freq[move] += 1
-            fav = max(freq, key=freq.get)
-            pct = round(freq[fav] / len(player_history) * 100)
-            print(f"Your Favourite : {fav} ({pct}% of plays)")
+        # Show stats once, after every round, before asking whether to continue.
+        print_stats(rounds_played, user_score, computer_score, player_history)
 
         play_again_input = input("Do you want to play again? (yes/no): ").lower()
         if play_again_input != "yes":
-            print("\nThanks for playing! Final results:")
-            print("\n--- Game Statistics ---")
-            print(f"Rounds Played  : {rounds_played}")
-            print(f"Your Score     : {user_score}")
-            print(f"Computer Score : {computer_score}")
-            if player_history:
-                freq = {"rock": 0, "paper": 0, "scissors": 0}
-                for move in player_history:
-                    freq[move] += 1
-                fav = max(freq, key=freq.get)
-                pct = round(freq[fav] / len(player_history) * 100)
-                print(f"Your Favourite : {fav} ({pct}% of plays)")
+            print("\nThanks for playing! Final results shown above.")
 
             name = input("Enter your name to save the results (optional): ")
-            if not name:
-                name = "Anonymous"
-            result_string = (
-                f"Player: {name}, Final Score: {user_score} - {computer_score} "
-                f"(User-Computer), Rounds: {rounds_played}\n"
-            )
-            try:
-                with RESULTS_FILE.open("a", encoding="utf-8") as f:
-                    f.write(result_string)
+            if save_result(name, user_score, computer_score, rounds_played):
                 print("Game results saved successfully.")
-            except OSError as e:
-                print(f"Error: Could not save game results: {e}")
             break
 
 
 if __name__ == '__main__':
     main()
-

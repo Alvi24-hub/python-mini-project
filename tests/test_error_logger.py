@@ -45,6 +45,17 @@ class ErrorLoggerTests(unittest.TestCase):
             self.assertEqual(summary["project_counts"]["Project B"], 2)
             self.assertEqual(summary["project_counts"]["Project A"], 1)
 
+    def test_log_exception_closes_file_descriptors(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / "error-logs.jsonl"
+            log_exception("Project FD Test", RuntimeError("fd test"), log_path=log_path)
+            
+            # Verify file can be renamed/deleted without WinError 32 permission lock
+            renamed_path = Path(tmpdir) / "renamed-logs.jsonl"
+            log_path.rename(renamed_path)
+            self.assertTrue(renamed_path.exists())
+
 
 if __name__ == "__main__":
     unittest.main()
+
