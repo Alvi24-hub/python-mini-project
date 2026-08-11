@@ -17,122 +17,71 @@ if (!document.getElementById('spinStyle')) {
   document.head.appendChild(style);
 }
 
+// ============================================
+// THEME TOGGLE - FIXED
+// ============================================
+
 const html = document.documentElement;
+const themeColorMeta = document.getElementById("themeColorMeta");
+
+// Get all theme toggle buttons
 const themeToggles = document.querySelectorAll('.theme-toggle');
 const themeModePicker = document.getElementById('themeModePicker');
 const themeModeMenu = document.getElementById('themeModeMenu');
-const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 
-function prefersReducedMotion() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Function to update all toggle icons
+function updateAllThemeIcons(theme) {
+  themeToggles.forEach(function(toggle) {
+    const icon = toggle.querySelector('i');
+    if (icon) {
+      if (theme === 'dark') {
+        icon.className = 'fas fa-moon';
+        toggle.setAttribute('aria-label', 'Switch to light mode');
+      } else {
+        icon.className = 'fas fa-sun';
+        toggle.setAttribute('aria-label', 'Switch to dark mode');
+      }
+    }
+  });
 }
 
-function safeRun(fn) {
-  try {
-    fn();
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-function debounce(fn, ms) {
-  var timer;
-  return function () {
-    var args = arguments;
-    var ctx = this;
-    clearTimeout(timer);
-    timer = setTimeout(function () {
-      fn.apply(ctx, args);
-    }, ms);
-  };
-}
-
-function syncThemeColor(theme) {
-  var meta = document.getElementById("themeColorMeta");
-  if (meta)
-    meta.setAttribute("content", theme === "light" ? "#f4f6f9" : "#0c0f1a");
-}
-
-function updateThemeToggleAria(isLightTheme) {
-  themeToggles.forEach(function (toggle) {
-    toggle.setAttribute(
-      'aria-label',
-      isLightTheme ? 'Switch to dark mode' : 'Switch to light mode'
+// Function to apply theme
+function applyTheme(theme) {
+  html.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  
+  if (themeColorMeta) {
+    themeColorMeta.setAttribute(
+      'content',
+      theme === 'light' ? '#f4f6f9' : '#0c0f1a'
     );
-  });
-}
-
-function setThemePickerLabel(mode) {
-  if (!themeModePicker) return;
-  var label = themeModePicker.querySelector('.theme-picker-value');
-  if (!label) return;
-  var labelText =
-    mode === 'auto'
-      ? 'Auto (System)'
-      : mode === 'light'
-        ? 'Light'
-        : 'Dark';
-  label.textContent = labelText;
-  themeModePicker.setAttribute('aria-label', 'Appearance mode: ' + labelText);
-  themeModePicker.setAttribute(
-    'aria-expanded',
-    themeModeMenu && themeModeMenu.classList.contains('active') ? 'true' : 'false'
-  );
-  if (!themeModeMenu) return;
-  themeModeMenu.querySelectorAll('.theme-picker-option').forEach(function (option) {
-    const optionMode = option.getAttribute('data-value');
-    const isSelected = optionMode === mode;
-    option.setAttribute('aria-selected', isSelected ? 'true' : 'false');
-  });
-}
-
-function closeThemeMenu() {
-  if (!themeModeMenu || !themeModePicker) return;
-  themeModeMenu.classList.remove('active');
-  themeModePicker.setAttribute('aria-expanded', 'false');
-}
-
-function openThemeMenu() {
-  if (!themeModeMenu || !themeModePicker) return;
-  themeModeMenu.classList.add('active');
-  themeModePicker.setAttribute('aria-expanded', 'true');
-
-  const selectedOption = themeModeMenu.querySelector('.theme-picker-option[aria-selected="true"]');
-  if (selectedOption) {
-    selectedOption.focus();
   }
+  
+  updateAllThemeIcons(theme);
 }
 
-function getSystemTheme() {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+// Get saved theme
+let savedTheme = localStorage.getItem('theme');
+if (!savedTheme || (savedTheme !== 'light' && savedTheme !== 'dark')) {
+  savedTheme = 'dark';
 }
 
-function applyThemeMode(mode) {
-  var theme = mode === "auto" ? getSystemTheme() : mode;
-  html.setAttribute("data-theme", theme);
-  localStorage.setItem("theme", theme);
-  localStorage.setItem("themeMode", mode);
-  syncThemeColor(theme);
+// Apply saved theme
+applyTheme(savedTheme);
 
-  themeToggles.forEach(function (toggle) {
-    toggle.innerHTML =
-      theme === 'light'
-        ? '<i class="fas fa-sun" aria-hidden="true"></i>'
-        : '<i class="fas fa-moon" aria-hidden="true"></i>';
-    updateThemeToggleAria(theme === 'light');
+// Add click listeners to all theme toggles
+themeToggles.forEach(function(toggle) {
+  toggle.addEventListener('click', function(e) {
+    e.preventDefault();
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    applyTheme(newTheme);
+    console.log('🔄 Theme switched to:', newTheme);
   });
-}
+});
 
-const savedTheme = localStorage.getItem('theme') || 'dark';
-html.setAttribute('data-theme', savedTheme);
-syncThemeColor(savedTheme);
-if (themeToggles) {
-  themeToggles.innerHTML =
-    savedTheme === 'light'
-      ? '<i class="fas fa-sun" aria-hidden="true"></i>'
-      : '<i class="fas fa-moon" aria-hidden="true"></i>';
-  updateThemeToggleAria(savedTheme === 'light');
-}
+console.log('✅ Theme toggle initialized. Current theme:', savedTheme);
+
 function escapeHtml(str) {
   var d = document.createElement("div");
   d.textContent = str;
@@ -742,36 +691,41 @@ if (themeModePicker && themeModeMenu) {
 
   /* ── Playground Section Toggle ────────────────────────────── */
   function showProjectsSection() {
-    playgroundActive = false;
-    if (playgroundSection) playgroundSection.style.display = "none";
-    if (projectsSection) projectsSection.style.display = "";
-    if (
-      window.playgroundAPI &&
-      typeof window.playgroundAPI.deactivate === "function"
-    ) {
-      window.playgroundAPI.deactivate();
-    }
+  playgroundActive = false;
+  if (playgroundSection) playgroundSection.style.display = "none";
+  if (projectsSection) projectsSection.style.display = "";
+  
+  // ✅ FIX: Restore sidebar when leaving playground
+  document.body.classList.remove("sidebar-collapsed");
+  document.body.classList.add("sidebar-active");
+  
+  if (window.playgroundAPI && typeof window.playgroundAPI.deactivate === "function") {
+    window.playgroundAPI.deactivate();
   }
+}
 
   function showPlaygroundSection() {
-    playgroundActive = true;
-    syncStickyTabs("playground");
-    var statsCards = document.querySelectorAll(".stats-card");
-    statsCards.forEach(function (card) {
-      card.classList.remove("active");
-    });
-    if (projectsSection) projectsSection.style.display = "none";
-    if (playgroundSection) {
-      playgroundSection.style.display = "";
-      if (
-        window.playgroundAPI &&
-        typeof window.playgroundAPI.activate === "function"
-      ) {
-        window.playgroundAPI.activate();
-      }
+  playgroundActive = true;
+  syncStickyTabs("playground");
+  
+  var statsCards = document.querySelectorAll(".stats-card");
+  statsCards.forEach(function (card) {
+    card.classList.remove("active");
+  });
+  
+  if (projectsSection) projectsSection.style.display = "none";
+  if (playgroundSection) {
+    playgroundSection.style.display = "";
+    
+    // ✅ FIX: Keep sidebar visible but collapsed
+    document.body.classList.add("sidebar-active");
+    document.body.classList.add("sidebar-collapsed");
+    
+    if (window.playgroundAPI && typeof window.playgroundAPI.activate === "function") {
+      window.playgroundAPI.activate();
     }
   }
-
+}
   /* ── Sidebar Tabs ─────────────────────────────────────────── */
   sidebarTabs.forEach(function (st) {
     st.addEventListener("click", function () {
@@ -1007,43 +961,23 @@ heroNavButtons.forEach(function (button) {
   }
   if (stickyTabs.length) syncStickyTabs("all");
 
-  /* ── Sidebar Active Scroll Observer ───────────────────────── */
+/* ── Sidebar Active Scroll Observer ───────────────────────── */
 if (!pageCategory && projectsSection) {
     console.log('Setting up sidebar observer');
  
     const checkAndToggleSidebar = () => {
-      // FIX #1364: Never show sidebar if Playground is active
-      if (playgroundActive) {
-        document.body.classList.remove("sidebar-active");
+      // ✅ FIX: Always show sidebar on desktop, regardless of playground
+      if (window.innerWidth > 768) {
+        document.body.classList.add("sidebar-active");
         const fixedThemeToggle = document.getElementById("fixed-theme-toggle");
         if (fixedThemeToggle) {
-          fixedThemeToggle.style.display = "block";
-        }
-        return;
-      }
-
-      if (window.innerWidth <= 768) {
-        return;
-      }
-      const rect = projectsSection.getBoundingClientRect();
-      // Show sidebar when projects section is in view AND we're scrolled past hero
-      const heroSection = document.querySelector('.hero-section');
-      const heroBottom = heroSection ? heroSection.getBoundingClientRect().bottom : 0;
-      const showSidebar = rect.top < window.innerHeight && window.scrollY > heroBottom - 100;
- 
-      document.body.classList.toggle("sidebar-active", showSidebar);
-      console.log('Sidebar active:', showSidebar, 'scrollY:', window.scrollY, 'playgroundActive:', playgroundActive);
-
-      // Hide fixed-theme-toggle if sidebar is active
-      const fixedThemeToggle = document.getElementById("fixed-theme-toggle");
-      if (fixedThemeToggle) {
-        if (showSidebar) {
           fixedThemeToggle.style.display = "none";
         }
-        else {
-          fixedThemeToggle.style.display = "block";
-        }
+        return;
       }
+      
+      // On mobile, sidebar is controlled by hamburger menu
+      // Don't auto-hide on mobile
     };
  
     window.addEventListener('scroll', checkAndToggleSidebar);
